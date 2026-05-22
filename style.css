@@ -1,0 +1,177 @@
+* {
+    box-sizing: border-box;
+    user-select: none; /* 避免拖动文字，不影响体验 */
+}
+
+body {
+    font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+    background: linear-gradient(145deg, #1e2a2e 0%, #0f1a1f 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 750px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(12px);
+    border-radius: 48px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+    overflow: hidden;
+    padding: 20px;
+    border: 1px solid rgba(255,215,150,0.3);
+}
+
+.chat-history {
+    background: rgba(0,0,0,0.5);
+    border-radius: 32px;
+    padding: 20px;
+    height: 480px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+}
+
+/* 自定义滚动条 */
+.chat-history::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-history::-webkit-scrollbar-track {
+    background: #2c2c2c;
+    border-radius: 8px;
+}
+.chat-history::-webkit-scrollbar-thumb {
+    background: #c97e5a;
+    border-radius: 8px;
+}
+
+.user-message {
+    background: #2c5f2d;
+    align-self: flex-end;
+    color: #fefae0;
+    padding: 12px 18px;
+    border-radius: 28px 12px 28px 28px;
+    max-width: 80%;
+    font-size: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.npc-message {
+    background: #bc6c25;
+    align-self: flex-start;
+    color: #fdf0d5;
+    padding: 12px 18px;
+    border-radius: 12px 28px 28px 28px;
+    max-width: 80%;
+    font-size: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.system-message {
+    background: #3a3a3a;
+    align-self: center;
+    color: #ffd966;
+    padding: 6px 14px;
+    border-radius: 40px;
+    font-size: 0.8rem;
+    max-width: 90%;
+    text-align: center;
+}
+
+.input-area {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+}
+
+input {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 60px;
+    background: #2e241f;
+    color: #f7e5c2;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+    border: 1px solid #8b5a2b;
+}
+
+input:focus {
+    border-color: #e0a878;
+    background: #3e2e26;
+    box-shadow: 0 0 0 2px rgba(224,168,120,0.4);
+}
+
+button {
+    background: #b96f30;
+    border: none;
+    padding: 0 32px;
+    border-radius: 60px;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.2s;
+    height: 52px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+button:hover {
+    background: #d98d4a;
+    transform: scale(1.02);
+}
+
+button:disabled {
+    background: #6e4a2a;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.api-note {
+    text-align: center;
+    font-size: 0.75rem;
+    margin-top: 16px;
+    color: #c6b28b;
+    background: rgba(0,0,0,0.4);
+    padding: 8px;
+    border-radius: 40px;
+}
+
+.api-note a {
+    color: #ffcd94;
+    text-decoration: none;
+}
+
+.api-note a:hover {
+    text-decoration: underline;
+}
+
+.typing {
+    background: #896b47;
+    align-self: flex-start;
+    padding: 10px 18px;
+    border-radius: 28px;
+    font-style: italic;
+    color: #f9e0a0;
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+@media (max-width: 550px) {
+    .game-container { padding: 14px; }
+    .chat-history { height: 420px; }
+    button { padding: 0 18px; }
+    .user-message, .npc-message { max-width: 90%; font-size: 0.9rem; }
+}
