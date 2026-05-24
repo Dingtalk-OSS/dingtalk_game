@@ -1,20 +1,2026 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-perf="lite">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>酒馆老板 - AI文字游戏</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=yes">
+<title>灵境 · 暗黑向互动叙事</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--accent:#5ba3a0;--accent-light:#7fc9c6;--accent-glow:rgba(91,163,160,0.15);--story-color:#d4835a;--dialogue-color:#b8795c;--text-primary:#1e2f3e;--text-soft:#5a6f7e;--bg-glass:rgba(255,255,255,0.25);--glass-border:rgba(255,255,255,0.18);--bg-main:#f0f7f3;--bg-image:none;--bg-blur:0px;--sidebar-bg:rgba(255,255,255,0.15);--story-bg:rgba(255,245,235,0.3);--shadow:0 20px 50px -12px rgba(0,0,0,0.08);--radius:22px;--radius-sm:14px;--radius-lg:30px;--font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,sans-serif;--story-size:1rem;--danger:#c44;--success:#5ba3a0;}
+body{font-family:var(--font),sans-serif;min-height:100vh;color:var(--text-primary);overflow:hidden;background:var(--bg-main);background-image:var(--bg-image);background-size:cover;background-position:center;background-repeat:no-repeat;backdrop-filter:blur(var(--bg-blur));-webkit-backdrop-filter:blur(var(--bg-blur));}
+body.has-bg .geo-bg{display:none;}
+.geo-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1;}
+.geo-shape{position:absolute;opacity:0.035;animation:geoFloat var(--dur,20s) ease-in-out infinite;}
+@keyframes geoFloat{0%,100%{transform:translate(0,0) rotate(0deg)}25%{transform:translate(35px,-25px) rotate(90deg)}50%{transform:translate(-15px,35px) rotate(180deg)}75%{transform:translate(20px,15px) rotate(270deg)}}
+.app{display:flex;height:100vh;width:100vw;position:relative;}
+/* === SIDEBAR === */
+.sidebar{width:260px;min-width:260px;background:var(--sidebar-bg);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border-right:1px solid var(--glass-border);padding:0.8rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.4rem;transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),opacity 0.4s cubic-bezier(0.22,1,0.36,1);z-index:50;box-shadow:4px 0 30px rgba(0,0,0,0.02);position:relative;border-radius:0 var(--radius-lg) var(--radius-lg) 0;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.sidebar::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:0;background:conic-gradient(var(--accent),transparent,var(--accent-light),transparent,var(--accent));opacity:0.04;animation:liqSpin 8s linear infinite;pointer-events:none;}
+.sidebar.collapsed{transform:translateX(-100%);width:0;min-width:0;padding:0;overflow:hidden;border:none;}
+.sidebar.auto-hide-mode:not(:hover){transform:translateX(-100%);opacity:0;pointer-events:none;}
+.sidebar-toggle{position:fixed;top:0.7rem;left:0.7rem;z-index:200;background:var(--bg-glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:40px;padding:8px 13px;cursor:pointer;font-size:1rem;color:var(--text-primary);box-shadow:var(--shadow);transition:0.25s;line-height:1;}
+.sidebar-toggle:hover{transform:scale(0.96);background:rgba(255,255,255,0.7);}
+.s-section{background:rgba(255,255,255,0.35);border-radius:var(--radius-sm);padding:0.55rem 0.75rem;border:1px solid rgba(255,255,255,0.2);}
+.s-section h3{font-size:0.68rem;font-weight:600;letter-spacing:0.3px;opacity:0.5;margin-bottom:0.35rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.s-section h3 .arrow{transition:transform 0.2s;font-size:0.6rem;}
+.s-section h3 .arrow.open{transform:rotate(180deg);}
+.s-body{display:flex;flex-direction:column;gap:5px;}
+.s-body.hide{display:none;}
+.s-body label{font-size:0.63rem;opacity:0.65;display:flex;justify-content:space-between;align-items:center;}
+.s-body input,.s-body select{background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.4);border-radius:10px;padding:6px 10px;font-size:0.76rem;width:100%;color:var(--text-primary);outline:none;transition:0.25s;-webkit-appearance:none;appearance:none;box-shadow:0 1px 3px rgba(0,0,0,0.02);}
+.s-body select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:26px;}
+.s-body input:focus,.s-body select:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow);}
+.s-body input[type="range"]{padding:0;height:4px;border-radius:4px;background:rgba(0,0,0,0.06);-webkit-appearance:none;appearance:none;}
+.s-body input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.btn{background:rgba(255,255,255,0.65);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:5px 10px;font-size:0.7rem;font-weight:500;color:var(--text-primary);cursor:pointer;transition:0.2s;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:3px;box-shadow:0 1px 3px rgba(0,0,0,0.02);}
+.btn-primary{background:var(--accent);color:white;border-color:var(--accent);}
+.btn-primary:hover{background:var(--accent-light);}
+.btn:hover{transform:scale(0.97);}
+.btn-group{display:flex;gap:3px;flex-wrap:wrap;}
+.btn-group .btn{flex:1;min-width:45px;}
+.model-link{font-size:0.58rem;color:var(--accent);text-decoration:none;}
+.range-val{font-size:0.63rem;min-width:22px;text-align:right;}
+.color-row{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
+.color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:0.2s;flex:0 0 22px;}
+.color-dot:hover,.color-dot.active{border-color:var(--text-primary);transform:scale(1.1);}
+input[type="color"]{width:32px;height:24px;padding:1px;border-radius:5px;cursor:pointer;flex:0 0 32px;border:1px solid rgba(0,0,0,0.05);}
+/* === MAIN === */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;height:100vh;overflow:hidden;position:relative;padding:1rem 1rem 0;}
+.main-glass{position:absolute;inset:0.5rem;border-radius:var(--radius-lg);background:var(--bg-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);box-shadow:0 8px 40px rgba(0,0,0,0.03);pointer-events:none;}
+.main-glass::before{content:'';position:absolute;top:-1px;left:-1px;right:-1px;bottom:-1px;border-radius:calc(var(--radius-lg)+1px);background:conic-gradient(var(--accent),transparent,var(--accent-light),transparent,var(--accent));opacity:0.06;animation:liqSpin 8s linear infinite;pointer-events:none;}
+@keyframes liqSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.story-area{max-width:660px;width:100%;flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1.2rem 0.9rem 5rem;scroll-behavior:smooth;position:relative;z-index:1;scrollbar-gutter:stable both-edges;min-height:0;}
+.story-area.centered{justify-content:center;}
+.story-area::before{content:'';position:absolute;top:-20%;left:-15%;right:-15%;bottom:-20%;background:radial-gradient(ellipse at center,var(--accent-glow) 0%,transparent 60%);opacity:0.25;pointer-events:none;z-index:0;animation:glowPulse 5s ease-in-out infinite alternate;}
+@keyframes glowPulse{0%{opacity:0.15}100%{opacity:0.35}}
+.message{background:linear-gradient(135deg,var(--story-bg),rgba(255,248,240,0.3));backdrop-filter:blur(10px);border-radius:var(--radius);padding:1.1rem 1.5rem;width:100%;position:relative;z-index:1;border:1px solid rgba(255,255,255,0.25);box-shadow:0 4px 20px rgba(0,0,0,0.03),inset 0 1px 0 rgba(255,255,255,0.3);animation:msgIn 0.5s ease-out;}
+@keyframes msgIn{0%{opacity:0;transform:translateY(18px) scale(0.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.story-text{line-height:1.9;font-size:var(--story-size);word-break:break-word;white-space:pre-wrap;text-align:center;color:var(--text-primary);text-shadow:0 1px 2px rgba(255,255,255,0.2);min-height:1.2em;}
+.story-text em{font-style:italic;color:var(--story-color);font-weight:600;padding:0 2px;text-shadow:0 0 10px rgba(212,131,90,0.1);}
+.story-text strong{color:var(--accent);}
+.story-text p{margin:0.4rem 0;}
+.dialogue{color:var(--dialogue-color);}
+.speaker-tag{color:#b8795c;font-weight:500;}
+.time-display{font-size:1.15rem;text-align:center;color:var(--accent);letter-spacing:3px;padding:0.3rem 0;font-weight:700;opacity:0.6;line-height:1.4;width:100%;position:relative;z-index:1;}
+.cursor{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:2px;animation:cursorBlink 0.7s step-end infinite;vertical-align:text-bottom;}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+.water-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.1);transform:scale(0);animation:waterRipple 0.8s ease-out forwards;pointer-events:none;z-index:2;}
+@keyframes waterRipple{to{transform:scale(8);opacity:0}}
+/* === HINT TOAST === */
+.hint-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:white;padding:14px 28px;border-radius:16px;font-size:0.9rem;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;font-weight:500;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:80vw;text-align:center;white-space:normal;line-height:1.4;}
+.hint-toast.visible{opacity:1;}
+/* === TOGGLE BUTTONS === */
+.toggle-btn{background:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.15);border-radius:30px;padding:5px 12px;font-size:0.62rem;font-weight:500;color:var(--text-soft);cursor:pointer;transition:all 0.25s;text-align:center;user-select:none;}
+.toggle-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+.toggle-btn:hover{transform:scale(0.96);}.toggle-btn:active{transform:scale(0.85);}.toggle-btn.pop{animation:popPress .3s ease;}@keyframes popPress{0%{transform:scale(1)}30%{transform:scale(.85)}100%{transform:scale(1)}}
+/* === WELCOME OVERLAY === */
+.welcome-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:5;background:var(--bg-glass);}
+.welcome-overlay.hidden{display:none;}
+.welcome-box{text-align:center;max-width:420px;padding:2.5rem;border-radius:var(--radius-lg);}
+.welcome-box h1{font-size:2.2rem;font-weight:300;color:var(--accent);margin:0 0 0.8rem;letter-spacing:6px;}
+.welcome-box p{font-size:0.95rem;color:var(--text-soft);line-height:1.6;margin:0 0 0.5rem;}
+.welcome-box .welcome-hint{font-size:0.78rem;color:var(--text-soft);opacity:0.6;margin-top:1.2rem;}
+/* === THINKING BOX === */
+.thinking-box{border-top:1px solid var(--glass-border);background:var(--bg-glass);flex-shrink:0;max-height:200px;overflow-y:auto;transition:max-height 0.4s;width:100%;max-width:640px;position:relative;z-index:2;border-radius:0 0 var(--radius-sm) var(--radius-sm);}
+.thinking-box.collapsed{max-height:0;border-top-color:transparent;overflow:hidden;}
+.thinking-header{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;background:var(--bg-glass);backdrop-filter:blur(10px);cursor:pointer;font-size:11px;color:var(--text-soft);user-select:none;border-top:1px solid var(--glass-border);}
+.thinking-header:hover{color:var(--text-primary);}
+.thinking-content{padding:8px 16px 12px;font-size:12px;color:var(--text-soft);line-height:1.6;font-style:italic;white-space:pre-wrap;word-break:break-word;}
+.thinking-content .raw-text{font-style:normal;font-size:11px;color:var(--text-soft);opacity:0.7;}
+.thinking-toggle-icon{transition:transform 0.3s;font-size:10px;}
+.thinking-box:not(.collapsed) .thinking-toggle-icon{transform:rotate(90deg);}
+/* === BOTTOM BAR === */
+.bottom-bar{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:10px;align-items:center;pointer-events:none;}
+.bottom-bar>*{pointer-events:auto;}
+.continue-btn{background:rgba(255,255,255,0.72);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,0.65);border-radius:999px;padding:12px 32px;cursor:pointer;font-size:0.92rem;color:var(--text-primary);font-weight:700;box-shadow:0 18px 40px rgba(33,51,71,0.12);display:none;transition:transform 0.2s,background 0.2s,opacity 0.2s;letter-spacing:0.5px;min-width:170px;text-align:center;}
+.continue-btn.visible{display:block;}
+.continue-btn:hover{transform:translateY(-1px);background:rgba(255,255,255,0.92);}
+.npc-quick-btn{background:rgba(255,255,255,0.72);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,0.65);border-radius:999px;padding:12px 20px;cursor:pointer;font-size:0.85rem;color:var(--text-primary);font-weight:600;box-shadow:0 18px 40px rgba(33,51,71,0.12);display:none;transition:transform 0.2s,background 0.2s;white-space:nowrap;}
+.npc-quick-btn.visible{display:block;}
+.npc-quick-btn:hover{transform:translateY(-1px);background:rgba(255,255,255,0.92);}
+.npc-quick-btn .badge{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--danger);margin-left:6px;vertical-align:middle;animation:badgePulse 1s ease-in-out infinite;}
+@keyframes badgePulse{0%,100%{opacity:1}50%{opacity:0.3}}
+/* === LEAD DARK INDICATOR (integrated into UI) === */
+.lead-dark-indicator{text-align:center;padding:0.4rem 1rem 0;font-size:0.82rem;color:var(--text-soft);position:relative;z-index:2;display:none;flex-shrink:0;letter-spacing:0.5px;}
+.lead-dark-indicator.visible{display:block;}
+.lead-dark-indicator .name{font-weight:600;color:var(--text-primary);}
+.lead-dark-indicator .value{font-weight:700;color:var(--danger);}
+/* === OPTIONS POPUP === */
+.options-modal{position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,0.15);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:0.3s;}
+.options-modal.active{opacity:1;visibility:visible;}
+.options-popup{width:92%;max-width:560px;max-height:78vh;background:rgba(255,255,255,0.72);backdrop-filter:blur(48px);border-radius:calc(var(--radius-lg)+12px);border:1px solid rgba(255,255,255,0.45);box-shadow:0 32px 90px rgba(0,0,0,0.14);display:flex;flex-direction:column;overflow:hidden;animation:popIn 0.35s ease-out;position:relative;}
+.options-popup::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;border-radius:calc(var(--radius-lg)+2px);background:conic-gradient(var(--accent),var(--accent-light),#f0c9a0,var(--accent-light),var(--accent));opacity:0.08;animation:liqSpin 5s linear infinite;z-index:0;pointer-events:none;}
+.options-popup>*{position:relative;z-index:1;}
+@keyframes popIn{0%{opacity:0;transform:scale(0.92) translateY(16px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.popup-header{padding:0.7rem 1rem 0.3rem;display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;position:relative;}
+.popup-close{position:absolute;right:10px;top:6px;background:none;border:none;font-size:1rem;cursor:pointer;color:var(--text-soft);padding:2px 6px;border-radius:20px;transition:0.2s;line-height:1;}
+.popup-close:hover{background:rgba(0,0,0,0.05);}
+.phase-tab{font-size:0.68rem;padding:3px 14px;border-radius:30px;background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.15);cursor:default;color:var(--text-soft);font-weight:500;}
+.phase-tab.active{background:var(--accent);color:white;border-color:var(--accent);}
+.phase-tab.done{background:rgba(91,163,160,0.1);color:var(--accent);}
+.popup-preview{flex:1;overflow-y:auto;min-height:80px;max-height:35vh;padding:0.7rem 1rem;margin:0.3rem 0.5rem;background:rgba(255,255,255,0.2);border-radius:var(--radius-sm);border-left:3px solid var(--accent);font-size:0.85rem;line-height:1.55;color:var(--text-soft);white-space:pre-wrap;word-break:break-word;}
+.popup-preview em{font-style:italic;color:var(--story-color);font-weight:500;}
+.popup-preview .seg-block{padding:4px 0 4px 14px;border-bottom:1px solid rgba(0,0,0,0.04);position:relative;line-height:1.5;}
+.popup-preview .seg-block:last-child{border-bottom:none;}
+.popup-preview .seg-block:before{content:'·';position:absolute;left:0;top:4px;color:var(--accent);font-weight:700;font-size:1.2rem;}
+.popup-preview .seg-text{font-size:0.8rem;line-height:1.5;}
+.popup-options{padding:0.5rem 1rem 0.8rem;overflow-y:auto;max-height:30vh;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:flex-end;border-radius:0 0 calc(var(--radius-lg)+8px) calc(var(--radius-lg)+8px);}
+.option-btn{background:rgba(255,255,255,0.3);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.25);border-radius:60px;padding:8px 18px;font-size:0.84rem;font-weight:500;color:var(--text-primary);cursor:pointer;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);flex:0 0 auto;min-width:70px;text-align:center;position:relative;overflow:hidden;user-select:none;box-shadow:0 2px 10px rgba(0,0,0,0.02);}
+.option-btn::before{content:'';position:absolute;inset:0;border-radius:60px;background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,transparent 60%);pointer-events:none;}
+.option-btn:hover{background:var(--accent-glow);border-color:var(--accent);transform:scale(1.04);box-shadow:0 6px 20px var(--accent-glow);}
+.option-btn:active{transform:scale(0.94);}
+.option-btn .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.4);transform:scale(0);animation:ripAnim 0.5s ease-out;pointer-events:none;}
+@keyframes ripAnim{to{transform:scale(4);opacity:0}}
+.option-btn.life{border-color:var(--success) !important;background:rgba(91,163,160,0.15) !important;}
+.option-btn.death{border-color:var(--danger) !important;background:rgba(196,68,68,0.08) !important;}
+/* === LOADING === */
+.loading-overlay{position:fixed;inset:0;z-index:2000;background:rgba(240,247,243,0.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity 0.35s,visibility 0.35s;pointer-events:none;}
+.loading-overlay.active{opacity:1;visibility:visible;pointer-events:auto;}
+.loading-box{background:rgba(255,255,255,0.5);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;max-width:380px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,0.08);text-align:center;border:1px solid rgba(255,255,255,0.35);animation:ldIn 0.4s ease-out;}
+@keyframes ldIn{0%{opacity:0;transform:scale(0.9) translateY(10px)}100%{opacity:1}}
+.loading-box h2{font-size:0.9rem;color:var(--accent);margin-bottom:0.3rem;font-weight:500;}
+.progress-wrap{width:100%;height:3px;background:rgba(0,0,0,0.05);border-radius:10px;overflow:hidden;margin:0.2rem 0;}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-light));border-radius:10px;transition:width 0.3s;}
+.progress-label{font-size:0.6rem;color:var(--text-soft);margin-bottom:0.3rem;}
+.pause-btn{background:rgba(196,68,68,0.12);color:var(--danger);border:1px solid rgba(196,68,68,0.2);border-radius:30px;padding:3px 14px;font-size:0.62rem;cursor:pointer;font-weight:600;transition:0.2s;display:block;margin:2px auto 4px;}
+.pause-btn:hover{background:rgba(196,68,68,0.2);transform:scale(0.96);}
+.tip-area{font-size:0.7rem;color:var(--text-soft);padding:0.3rem;background:rgba(255,255,255,0.2);border-radius:var(--radius-sm);margin:0.2rem 0;min-height:24px;}
+.game-tabs{display:flex;gap:4px;justify-content:center;margin:0.2rem 0;}
+.game-tab{font-size:0.6rem;padding:3px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.2);cursor:pointer;color:var(--text-soft);transition:0.2s;font-weight:500;}
+.game-tab.active{background:var(--accent);color:white;border-color:var(--accent);}
+/* === MINESWEEPER === */
+.mine-grid{display:inline-grid;gap:2px;margin:0.2rem 0;user-select:none;}
+.mine-cell{width:30px;height:30px;border-radius:4px;background:rgba(255,255,255,0.45);border:1px solid rgba(0,0,0,0.03);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:600;cursor:pointer;transition:0.1s;color:var(--text-primary);}
+.mine-cell:active{transform:scale(0.9);}
+.mine-cell.revealed{background:rgba(255,255,255,0.1);border-color:transparent;cursor:default;}
+.mine-cell.boom{background:#f5b0b0;animation:shake 0.3s;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.mine-cell.flag{background:rgba(212,131,90,0.12);}
+.mine-count-1{color:#3a7bb5}.mine-count-2{color:#3a9b5a}.mine-count-3{color:var(--danger)}
+.mine-header{display:flex;justify-content:space-between;align-items:center;font-size:0.6rem;color:var(--text-soft);margin-bottom:2px;}
+.mine-header .mine-btn{font-size:0.55rem;padding:2px 8px;border-radius:20px;border:1px solid rgba(0,0,0,0.05);background:rgba(255,255,255,0.35);cursor:pointer;}
+.mine-restart-wrap{text-align:center;margin-top:3px;}
+.mine-restart-wrap .mine-btn{font-size:0.65rem;padding:3px 14px;border-radius:20px;border:1px solid rgba(0,0,0,0.05);background:rgba(255,255,255,0.35);cursor:pointer;}
+/* === TAP GAME === */
+.tap-game{text-align:center;padding:0.2rem 0;}
+.tap-stats{display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text-soft);margin:0.2rem 0;}
+.tap-btn{width:80px;height:80px;border-radius:50%;background:linear-gradient(145deg,var(--accent),var(--accent-light));color:white;border:none;font-size:1.2rem;cursor:pointer;margin:0.2rem auto;display:block;box-shadow:0 4px 20px var(--accent-glow);transition:0.15s;user-select:none;}
+.tap-btn:active{transform:scale(0.88);}
+.tap-bar-wrap{width:100%;height:6px;background:rgba(0,0,0,0.04);border-radius:10px;overflow:hidden;margin:0.2rem 0;}
+.tap-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-light));border-radius:10px;transition:width 0.2s;}
+.tap-level-up{font-size:0.6rem;color:var(--story-color);font-weight:600;}
+.lottery-btn{background:rgba(255,255,255,0.5);backdrop-filter:blur(8px);border:1px solid var(--glass-border);border-radius:12px;padding:5px 12px;font-size:0.62rem;cursor:pointer;color:var(--text-primary);margin:6px auto 0;display:inline-flex;align-items:center;gap:4px;transition:0.2s;}
+.lottery-btn:hover{transform:scale(0.96);background:rgba(255,255,255,0.7);}
+.lottery-btn:disabled{opacity:0.3;cursor:default;transform:none;}
+.lottery-result{font-size:0.6rem;color:var(--accent);font-weight:500;min-height:1em;text-align:center;margin-top:3px;}
+/* === SIDEBAR INTEGRAL === */
+.side-score{display:flex;align-items:center;justify-content:space-between;font-size:0.75rem;padding:0.3rem 0;border-bottom:1px solid rgba(0,0,0,0.04);}
+.side-score .label{opacity:0.6;font-weight:500;}
+.side-score .val{font-weight:700;color:var(--accent);}
+.side-lottery-btn{background:var(--accent);color:white;border:none;border-radius:30px;padding:4px 12px;font-size:0.62rem;cursor:pointer;font-weight:600;transition:0.2s;display:block;width:100%;margin-top:4px;}
+.side-lottery-btn:hover{background:var(--accent-light);transform:scale(0.97);}
+/* === NEW GAMES === */
+.game-btn{background:rgba(255,255,255,0.5);border:1px solid rgba(0,0,0,0.04);border-radius:10px;padding:4px 14px;font-size:0.65rem;cursor:pointer;color:var(--text-primary);transition:0.15s;}
+.game-btn:hover{transform:scale(0.96);background:rgba(255,255,255,0.7);}
+.game-btn:disabled{opacity:0.3;cursor:default;transform:none;}
+.rps-btns{display:flex;gap:8px;justify-content:center;padding:4px 0;}
+.rps-btn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(0,0,0,0.06);background:white;font-size:1.2rem;cursor:pointer;transition:0.15s;}
+.rps-btn:hover{transform:scale(1.1);background:var(--accent-glow);}
+.rps-btn:active{transform:scale(0.9);}
+.rps-result{text-align:center;font-size:0.65rem;color:var(--text-soft);min-height:1.4em;padding:2px 0;}
+.guess-input{display:flex;gap:6px;justify-content:center;padding:4px 0;}
+.guess-input input{width:60px;padding:4px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);font-size:0.7rem;text-align:center;outline:none;}
+.guess-input input:focus{border-color:var(--accent);}
+.guess-result{text-align:center;font-size:0.65rem;color:var(--text-soft);min-height:1.4em;padding:2px 0;}
+.guess-range{text-align:center;font-size:0.55rem;color:var(--text-soft);opacity:0.5;padding:1px 0;}
+.memory-grid{display:inline-grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:4px auto;display:flex;flex-wrap:wrap;justify-content:center;}
+.memory-card{width:36px;height:36px;border-radius:6px;background:var(--accent);color:white;font-size:0.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.2s;border:1px solid rgba(255,255,255,0.1);}
+.memory-card.flipped{background:white;color:var(--text-primary);border-color:rgba(0,0,0,0.06);transform:scale(0.95);}
+.memory-card.matched{background:rgba(91,163,160,0.2);color:var(--accent);border-color:var(--accent);cursor:default;}
+.memory-card:active{transform:scale(0.9);}
+.memory-state{text-align:center;font-size:0.6rem;color:var(--text-soft);min-height:1.2em;}
+.slot-reels{display:flex;gap:4px;justify-content:center;padding:4px 0;font-size:1.5rem;}
+.slot-reel{width:48px;height:48px;background:white;border-radius:8px;border:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+.slot-reel.spin{animation:slotSpin .1s linear infinite;}
+@keyframes slotSpin{0%{transform:translateY(0)}100%{transform:translateY(-2px)}}
+.slot-result{text-align:center;font-size:0.65rem;color:var(--text-soft);min-height:1.4em;padding:2px 0;}
+/* === LOTTERY MODAL === */
+.lottery-modal{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:0.3s;}
+.lottery-modal.active{opacity:1;visibility:visible;}
+.lottery-box{background:rgba(255,255,255,0.82);backdrop-filter:blur(32px);border-radius:var(--radius-lg);padding:1.5rem;max-width:360px;width:90%;text-align:center;border:1px solid rgba(255,255,255,0.4);box-shadow:0 30px 80px rgba(0,0,0,0.1);}
+.lottery-box h3{font-size:1rem;color:var(--accent);margin-bottom:0.3rem;}
+.lottery-box .cost{font-size:0.7rem;color:var(--text-soft);margin-bottom:0.8rem;}
+.lottery-box .result-display{font-size:0.9rem;color:var(--text-primary);padding:0.8rem;background:rgba(255,255,255,0.3);border-radius:var(--radius-sm);margin-bottom:0.8rem;min-height:3em;display:flex;align-items:center;justify-content:center;line-height:1.5;}
+.lottery-box .re-btn{background:var(--accent);color:white;border:none;border-radius:30px;padding:6px 20px;font-size:0.78rem;cursor:pointer;font-weight:600;transition:0.2s;margin-right:8px;}
+.lottery-box .re-btn:hover{transform:scale(0.97);}
+.lottery-box .close-btn{background:rgba(0,0,0,0.04);color:var(--text-soft);border:none;border-radius:30px;padding:6px 16px;font-size:0.78rem;cursor:pointer;transition:0.2s;}
+.lottery-box .close-btn:hover{background:rgba(0,0,0,0.08);}
+.lottery-box .balance{font-size:0.6rem;color:var(--text-soft);opacity:0.5;margin-top:0.5rem;}
+/* === ATTRIBUTE PANEL === */
+.attr-panel{position:fixed;top:1rem;left:calc(260px + 1rem);right:auto;z-index:40;background:var(--bg-glass);backdrop-filter:blur(24px);border-radius:var(--radius-sm);padding:0.5rem 0.7rem;border:1px solid var(--glass-border);min-width:120px;box-shadow:var(--shadow);transition:0.3s;}
+.attr-panel.hide{opacity:0;pointer-events:none;transform:translateX(20px);}
+.attr-panel h4{font-size:0.62rem;opacity:0.45;letter-spacing:0.3px;margin-bottom:3px;display:flex;justify-content:space-between;}
+.attr-panel h4 .hide-btn{cursor:pointer;opacity:0.5;font-size:0.7rem;}
+.attr-item{display:flex;justify-content:space-between;font-size:0.7rem;padding:2px 0;border-bottom:1px solid rgba(0,0,0,0.02);}
+.attr-item:last-child{border:none;}
+.attr-item .val{font-weight:600;color:var(--accent);}
+.attr-item .val.danger{color:var(--danger);}
+/* === NPC PANEL === */
+.npc-panel{position:fixed;top:1rem;right:1rem;bottom:auto;left:auto;width:340px;max-width:90vw;display:flex;flex-direction:column;opacity:0;visibility:hidden;z-index:45;transition:opacity 0.3s,visibility 0.3s;max-height:90vh;}
+.npc-panel.active{opacity:1;visibility:visible;}
+.npc-panel.dragging{transition:none !important;user-select:none !important;}
+.chat-window{width:100%;height:100%;background:#f5f0eb;border-radius:var(--radius-lg);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.18);animation:cIn 0.3s ease-out;}
+@keyframes cIn{0%{opacity:0;transform:scale(0.92) translateY(16px)}100%{opacity:1}}
+.chat-header{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:white;padding:0.7rem 1rem;display:flex;justify-content:space-between;align-items:center;font-weight:500;font-size:0.85rem;cursor:grab;}
+.chat-header:active{cursor:grabbing;}
+.chat-header .close-btn{background:rgba(255,255,255,0.15);border:none;color:white;font-size:0.95rem;width:26px;height:26px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s;}
+.chat-header .close-btn:hover{background:rgba(255,255,255,0.3);}
+.npc-picker{display:flex;gap:4px;padding:0.4rem 0.8rem;background:#e8ddd2;overflow-x:auto;}
+.npc-btn{padding:3px 10px;border-radius:30px;border:none;background:rgba(255,255,255,0.35);font-size:0.7rem;cursor:pointer;white-space:nowrap;font-weight:500;color:var(--text-primary);transition:0.2s;}
+.npc-btn.active{background:var(--accent);color:white;}
+.npc-btn.locked{opacity:0.3;cursor:not-allowed;font-style:italic;}
+.npc-status{background:#e8ddd2;padding:0.4rem 0.8rem;text-align:center;font-style:italic;font-size:0.78rem;color:#5a4a3a;min-height:32px;display:flex;align-items:center;justify-content:center;gap:4px;border-bottom:1px solid rgba(0,0,0,0.03);}
+.npc-status .npc-name{font-style:normal;font-weight:600;color:var(--accent);}
+.affinity-bar{display:flex;gap:10px;justify-content:center;padding:2px 0;font-size:0.65rem;background:rgba(255,255,255,0.12);margin:0 0.8rem;border-radius:0 0 8px 8px;position:relative;}
+.affinity-item{display:flex;align-items:center;gap:2px;}
+.affinity-item .value{font-weight:600;}
+.affinity-item .value.good{color:var(--accent);}
+.affinity-item .value.bad{color:var(--danger);}
+.chat-messages{flex:1;overflow-y:auto;padding:0.7rem;display:flex;flex-direction:column;gap:6px;background:#ece6de;}
+.chat-bubble{max-width:78%;padding:7px 12px;border-radius:16px;word-break:break-word;line-height:1.4;font-size:0.8rem;animation:bubIn 0.25s ease-out;}
+@keyframes bubIn{0%{opacity:0;transform:translateY(4px)}100%{opacity:1}}
+.chat-bubble.npc{background:white;align-self:flex-start;border-bottom-left-radius:4px;}
+.chat-bubble.user{background:#cbe4f0;align-self:flex-end;border-bottom-right-radius:4px;}
+.chat-bubble .chat-time{font-size:0.52rem;opacity:0.3;margin-top:2px;text-align:right;}
+.chat-input-area{display:flex;gap:6px;padding:7px 10px;background:white;border-top:1px solid #e8e0d8;}
+.chat-input-area input{flex:1;border:1px solid #ddd;border-radius:30px;padding:7px 12px;font-size:0.78rem;outline:none;}
+.chat-input-area input:focus{border-color:var(--accent);}
+.chat-input-area button{background:var(--accent);color:white;border:none;border-radius:30px;padding:7px 15px;font-weight:500;cursor:pointer;font-size:0.78rem;}
+/* === NPC UNLOCK TOAST === */
+.npc-unlock-toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);z-index:150;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:10px 20px;box-shadow:0 10px 40px rgba(0,0,0,0.12);font-size:0.82rem;color:var(--text-primary);display:none;align-items:center;gap:12px;animation:toastSlideUp 0.3s ease-out;white-space:nowrap;}
+.npc-unlock-toast.visible{display:flex;}
+@keyframes toastSlideUp{0%{opacity:0;transform:translateX(-50%) translateY(20px)}100%{opacity:1;transform:translateX(-50%) translateY(0)}}
+.npc-unlock-toast .toast-text{font-weight:500;}
+.npc-unlock-toast .toast-text strong{color:var(--accent);}
+.npc-unlock-toast .toast-btn{background:var(--accent);color:white;border:none;border-radius:20px;padding:5px 14px;font-size:0.75rem;cursor:pointer;font-weight:600;transition:0.2s;}
+.npc-unlock-toast .toast-btn:hover{background:var(--accent-light);}
+.npc-unlock-toast .toast-dismiss{background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:0.9rem;padding:2px 6px;}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:10px}
+/* === RESPONSIVE === */
+@media(max-width:768px){
+.sidebar{position:fixed;top:0;left:0;height:100vh;width:250px;min-width:250px;z-index:55;transform:translateX(-100%);box-shadow:10px 0 40px rgba(0,0,0,0.06);border-radius:0 var(--radius-sm) var(--radius-sm) 0;-webkit-overflow-scrolling:touch;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.sidebar.mobile-open{transform:translateX(0);}
+.sidebar::before{animation:none !important;}
+.sidebar-toggle{left:0.5rem;top:0.5rem;padding:6px 10px;font-size:0.9rem;}
+.main{padding:0.4rem 0.4rem 0;}
+.story-area{max-width:100%;padding:1rem 0.8rem 5rem;gap:0.9rem;}
+.message{padding:0.8rem 1rem;}
+.story-text{font-size:calc(var(--story-size) * 0.92);}
+.thinking-box{max-width:100%;}
+.options-popup{max-height:85vh;width:93%;}
+.popup-preview{max-height:30vh;min-height:60px;font-size:0.8rem;}
+.popup-options{max-height:28vh;}
+.option-btn{padding:6px 13px;font-size:0.78rem;min-width:50px;}
+.attr-panel{top:auto;bottom:0.5rem;left:0.4rem;right:auto;min-width:85px;padding:0.35rem 0.5rem;font-size:0.65rem;}
+.npc-panel{position:fixed;top:0;right:0;bottom:0;left:0;width:100%;max-width:100vw;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border-radius:var(--radius-sm);padding:env(safe-area-inset-top,0) 0 0 0;box-sizing:border-box;}
+.chat-window{height:100%;width:100%;border-radius:var(--radius-sm);}
+.mine-cell{width:26px;height:26px;font-size:0.6rem;}
+.continue-btn,.npc-quick-btn{bottom:0.8rem;padding:10px 20px;font-size:0.86rem;}
+.bottom-bar{gap:6px;}
+.npc-unlock-toast{bottom:4.5rem;padding:8px 14px;font-size:0.75rem;white-space:normal;max-width:90vw;}
+}
+.hidden-input{display:none;}
+/* === PERFORMANCE GATE === */
+.perf-gate{position:fixed;inset:0;z-index:99999;background:#f0f7f3;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s;flex-direction:column;}
+.perf-gate.hide{opacity:0;pointer-events:none;}
+.perf-gate-box{text-align:center;max-width:400px;width:90%;padding:2rem 1.5rem;background:white;border-radius:var(--radius-lg);box-shadow:0 10px 40px rgba(0,0,0,0.06);}
+.perf-gate-box h1{font-size:2rem;font-weight:300;color:var(--accent);margin:0 0 0.3rem;letter-spacing:6px;}
+.perf-gate-box p{font-size:0.9rem;color:var(--text-soft);margin:0 0 1.2rem;line-height:1.5;}
+.perf-gate-choices{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.perf-btn{padding:12px 28px;border-radius:60px;border:1px solid;font-size:0.9rem;font-weight:600;cursor:pointer;transition:0.2s;user-select:none;}
+.perf-btn-lite{background:white;border-color:rgba(0,0,0,0.1);color:var(--text-primary);}
+.perf-btn-lite:hover{background:rgba(0,0,0,0.02);transform:scale(0.97);}
+.perf-btn-full{background:var(--accent);border-color:var(--accent);color:white;}
+.perf-btn-full:hover{background:var(--accent-light);transform:scale(0.97);}
+.perf-gate-hint{font-size:0.7rem;color:var(--text-soft);opacity:0.5;margin-top:1.2rem !important;margin-bottom:0 !important;}
+/* === PERFORMANCE LITE OVERRIDES === */
+[data-perf="lite"] .sidebar,
+[data-perf="lite"] .sidebar-toggle,
+[data-perf="lite"] .main-glass,
+[data-perf="lite"] .thinking-header,
+[data-perf="lite"] .continue-btn,
+[data-perf="lite"] .npc-quick-btn,
+[data-perf="lite"] .options-modal,
+[data-perf="lite"] .options-popup,
+[data-perf="lite"] .option-btn,
+[data-perf="lite"] .loading-overlay,
+[data-perf="lite"] .loading-box,
+[data-perf="lite"] .attr-panel,
+[data-perf="lite"] .npc-panel,
+[data-perf="lite"] .npc-unlock-toast,
+[data-perf="lite"] .hint-toast,
+[data-perf="lite"] .s-body input,
+[data-perf="lite"] .s-body select,
+[data-perf="lite"] .btn,
+[data-perf="lite"] .lottery-btn,
+[data-perf="lite"] .popup-header{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+[data-perf="lite"] .sidebar::before,
+[data-perf="lite"] .main-glass::before,
+[data-perf="lite"] .options-popup::before{display:none !important;}
+[data-perf="lite"] .story-area::before{animation:none !important;}
+[data-perf="lite"] .npc-panel{background:none !important;}
+[data-perf="lite"] .loading-overlay{background:rgba(240,247,243,0.55) !important;}
+[data-perf="lite"] .chat-window{border-radius:var(--radius-sm);}
+[data-perf="lite"] .geo-shape{animation:none !important;opacity:0.015;}
+</style>
 </head>
 <body>
-    <div class="game-container">
-        <h2>🍺 酒馆老板老汤姆</h2>
-        <div id="chat-history" class="chat-history"></div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="对NPC说点什么..." autocomplete="off">
-            <button id="send-btn">发送</button>
-        </div>
-    </div>
-    <script src="script.js"></script>
+<!-- PERFORMANCE GATE -->
+<div class="perf-gate" id="perfGate">
+<div class="perf-gate-box">
+<h1>✨ 灵境</h1>
+<p>穿越无数世界，邂逅命定之人。</p>
+<div class="perf-gate-choices">
+<button class="perf-btn perf-btn-full" onclick="setPerfMode('full')">完整体验</button>
+<button class="perf-btn perf-btn-lite" onclick="setPerfMode('lite')">流畅模式</button>
+</div>
+<p class="perf-gate-hint">如设备较旧或出现卡顿，建议选择流畅模式</p>
+</div>
+</div>
+<div class="app">
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar" id="sidebar">
+<div class="s-section">
+<h3 onclick="toggleBody(this)">API <span class="arrow open">&#9662;</span></h3>
+<div class="s-body">
+<label>API Key</label><input type="password" id="apiKeyInput" placeholder="输入 API Key">
+<label>平台</label>
+<select id="apiPlatform"><option value="siliconflow" selected>硅基流动</option><option value="modelscope">魔搭</option><option value="openai">OpenAI</option><option value="deepseek">DeepSeek</option><option value="moonshot">月之暗面</option><option value="anthropic">Claude</option><option value="google">Gemini</option></select>
+<label>模型</label><select id="modelSelect"></select>
+<div style="display:flex;gap:5px;"><div style="flex:1"><label>温度 <span class="range-val" id="tempVal">0.8</span></label><input type="range" id="temperature" min="0" max="1.5" step="0.05" value="0.8"></div><div style="flex:0 0 60px"><label>Top-P</label><input type="number" id="topP" value="0.9" step="0.05" min="0" max="1"></div></div>
+<div style="display:flex;gap:5px;"><div style="flex:1"><label>Max Tokens</label><input type="number" id="maxTokens" value="1024" step="50"></div><div style="flex:0 0 60px"><label>Presence</label><input type="number" id="presencePenalty" value="0" step="0.1" min="-2" max="2"></div></div>
+<label>跨域代理</label><select id="corsProxySelect"><option value="none">直接调用</option><option value="https://cors-anywhere.herokuapp.com/">CORS代理</option></select>
+<div class="btn-group"><button class="btn btn-primary" id="saveApiBtn">保存重启</button><button class="btn" id="testApiBtn">测试</button></div>
+<div style="margin-top:2px;font-size:0.58rem;opacity:0.45;display:flex;gap:3px;"><a class="model-link" href="https://cloud.siliconflow.cn" target="_blank">硅基流动</a><a class="model-link" href="https://modelscope.cn" target="_blank">魔搭</a><a class="model-link" href="https://platform.openai.com" target="_blank">OpenAI</a></div>
+</div></div>
+<div class="s-section">
+<h3 onclick="toggleBody(this)">界面 <span class="arrow open">&#9662;</span></h3>
+<div class="s-body">
+<label>主题色</label>
+<div class="color-row"><div class="color-dot active" style="background:#5ba3a0" data-color="accent" data-val="#5ba3a0"></div><div class="color-dot" style="background:#c47a9d" data-color="accent" data-val="#c47a9d"></div><div class="color-dot" style="background:#e8a87c" data-color="accent" data-val="#e8a87c"></div><div class="color-dot" style="background:#7fb5c7" data-color="accent" data-val="#7fb5c7"></div><input type="color" id="customAccent" value="#5ba3a0"></div>
+<label>剧情颜色</label>
+<div class="color-row"><div class="color-dot active" style="background:#d4835a" data-color="story" data-val="#d4835a"></div><div class="color-dot" style="background:#b85c4a" data-color="story" data-val="#b85c4a"></div><div class="color-dot" style="background:#c49b5c" data-color="story" data-val="#c49b5c"></div><div class="color-dot" style="background:#6a9f8f" data-color="story" data-val="#6a9f8f"></div><input type="color" id="customStoryColor" value="#d4835a"></div>
+<label>字号 <span class="range-val" id="sizeVal">1.0</span></label>
+<input type="range" id="fontSizeSlider" min="0.75" max="1.5" step="0.05" value="1.0">
+<label>背景</label><div class="btn-group"><button class="btn" id="uploadBgBtn">上传</button><button class="btn" id="resetBgBtn">重置</button></div>
+<input type="file" id="bgFileInput" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/bmp,image/avif" class="hidden-input">
+<label>背景模糊 <span class="range-val" id="blurVal">0</span></label>
+<input type="range" id="bgBlurSlider" min="0" max="20" step="1" value="0">
+<button class="toggle-btn active" id="bgSizeCover" data-mode="cover">铺满</button>
+	<button class="toggle-btn" id="bgSizeContain" data-mode="contain">适应</button>
+	<button class="toggle-btn" id="bgSizeFill" data-mode="fill">拉伸</button>
+	<label>字体</label><div class="btn-group"><button class="btn" id="uploadFontBtn">上传(.ttf)</button><button class="btn" id="resetFontBtn">重置</button></div>
+<input type="file" id="fontFileInput" accept=".ttf,.otf,.woff" class="hidden-input">
+<button class="btn" id="resetThemeBtn" style="margin-top:1px;">重置主题</button>
+</div></div>
+<div class="s-section">
+<h3 onclick="toggleBody(this)">剧情 <span class="arrow open">&#9662;</span></h3>
+<div class="s-body">
+<div class="side-score"><span class="label">积分</span><span class="val" id="scoreDisplay">0</span></div>
+<button class="side-lottery-btn" id="scoreLotteryBtn">🎯 积分抽奖 (20分/次)</button>
+<div style="height:4px"></div>
+<div class="btn-group"><button class="btn" id="exportWordBtn">Word</button><button class="btn" id="exportJsonBtn">JSON</button><button class="btn" id="importBtn">导入</button></div>
+<input type="file" id="fileInput" accept=".json,.doc" class="hidden-input">
+<button class="btn" id="clearBtn">清空</button>
+</div></div>
+<div class="s-section">
+<h3 onclick="toggleBody(this)">显示 <span class="arrow open">&#9662;</span></h3>
+<div class="s-body" id="displaySection">
+<button class="toggle-btn active" data-target="attrPanelToggle" data-hint="属性面板">属性面板</button>
+<button class="toggle-btn active" data-target="autoScrollToggle" data-hint="自动滚动">自动滚动</button>
+<button class="toggle-btn active" data-target="streamToggle" data-hint="流式输出">流式输出</button>
+<button class="toggle-btn" data-target="autoHideToggle" data-hint="侧边栏自动隐藏">侧边栏自动隐藏</button>
+<input type="checkbox" id="attrPanelToggle" class="hidden-input">
+<input type="checkbox" id="autoScrollToggle" checked class="hidden-input">
+<input type="checkbox" id="streamToggle" checked class="hidden-input">
+<input type="checkbox" id="autoHideToggle" class="hidden-input">
+<button class="toggle-btn" id="themeToggleBtn" data-hint="深色模式">深色模式</button>
+</div>
+</div>
+</div>
+<!-- MAIN -->
+<div class="main" id="mainArea">
+<div class="main-glass"></div>
+<div class="lead-dark-indicator" id="leadDarkIndicator"></div>
+<div class="story-area" id="storyArea"></div>
+<div class="welcome-overlay" id="welcomeOverlay">
+<div class="welcome-box">
+<h1>✨ 灵境</h1>
+<p>穿越无数世界，邂逅命定之人。</p>
+<p class="welcome-hint">请在左侧配置 API Key 后点击「保存重启」开始</p>
+</div>
+</div>
+<!-- THINKING BOX -->
+<div class="thinking-box collapsed" id="thinkingBox">
+<div class="thinking-header" id="thinkingToggle">
+<span>🧠 模型思考过程</span>
+<span class="thinking-toggle-icon">▶</span>
+</div>
+<div class="thinking-content" id="thinkingContent"><span class="raw-text">等待AI响应...</span></div>
+</div>
+</div>
+<!-- ATTRIBUTE PANEL -->
+<div class="attr-panel" id="attrPanel">
+<h4><span>属性</span><span class="hide-btn" id="hideAttrBtn">&#10005;</span></h4>
+<div><div class="attr-item"><span>魅力</span><span class="val" id="attr_charm">65</span></div><div class="attr-item"><span>智力</span><span class="val" id="attr_intel">72</span></div><div class="attr-item"><span>武力</span><span class="val" id="attr_strength">48</span></div><div class="attr-item"><span>幸运</span><span class="val" id="attr_luck">55</span></div><div class="attr-item"><span>好感度</span><span class="val" id="attr_affinity">--</span></div><div class="attr-item"><span>黑化值</span><span class="val danger" id="attr_dark">--</span></div></div>
+</div>
+<!-- OPTIONS POPUP -->
+<div class="options-modal" id="optionsModal">
+<div class="options-popup">
+<div class="popup-header" id="popupHeader">
+<span class="phase-tab active" id="phaseQuest">主线任务</span>
+<span class="phase-tab" id="phaseAction">行为选择</span>
+<button class="popup-close" id="closePopupBtn">&#10005;</button>
+</div>
+<div class="popup-preview" id="popupPreview"><em>等待...</em></div>
+<div class="popup-options" id="popupOptions"></div>
+</div></div>
+<!-- LOTTERY MODAL -->
+<div class="lottery-modal" id="lotteryModal">
+<div class="lottery-box">
+<h3>🎯 积分抽奖</h3>
+<div class="cost">消耗 20 积分抽一次</div>
+<div class="result-display" id="lotteryResultDisplay">点击下方按钮开始抽奖</div>
+<div>
+<button class="re-btn" id="lotteryDrawBtn">抽奖</button>
+<button class="close-btn" id="lotteryCloseBtn">关闭</button>
+</div>
+<div class="balance" id="lotteryBalance">余额：0 积分</div>
+</div></div>
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-box">
+<h2>灵境推演中</h2>
+<div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="progress-label" id="progressLabel">连接中...</div>
+<button class="pause-btn" id="pauseAIBtn" style="display:none">⏸ 暂停</button>
+<div class="game-tabs">
+<button class="game-tab active" data-game="mine" id="tabMine">扫雷</button>
+<button class="game-tab" data-game="tap" id="tabTap">开局</button>
+<button class="game-tab" data-game="rps" id="tabRps">猜拳</button>
+<button class="game-tab" data-game="guess" id="tabGuess">猜数</button>
+<button class="game-tab" data-game="memory" id="tabMemory">记忆</button>
+<button class="game-tab" data-game="slot" id="tabSlot">老虎机</button>
+</div>
+<div id="gameMine">
+<div class="mine-header"><span>地雷 <span id="mineCount">8</span></span><span>计时 <span id="mineTimer">0</span>s</span></div>
+<div class="mine-grid" id="mineGrid"></div>
+<div class="mine-restart-wrap"><button class="mine-btn" id="mineRestart">&#x1f504; 重开</button></div>
+</div>
+<div id="gameTap" style="display:none">
+<div class="tap-game">
+<div class="tap-stats"><span>金币: <strong id="tapCoins">0</strong></span><span>等级: <strong id="tapLevel">1</strong></span><span>收益: +<strong id="tapPerClick">1</strong>/次</span></div>
+<button class="tap-btn" id="tapBtn">&#x1f4b0;</button>
+<div class="tap-bar-wrap"><div class="tap-bar" id="tapBar" style="width:0%"></div></div>
+<div class="tap-level-up" id="tapLevelUp"></div>
+<button class="lottery-btn" id="lotteryBtn">🎰 抽奖 (10金币)</button>
+<div class="lottery-result" id="lotteryResult"></div>
+</div>
+</div>
+<div id="gameRps" style="display:none">
+<div style="padding:4px 0;text-align:center;font-size:0.6rem;color:var(--text-soft);">选一个出招</div>
+<div class="rps-btns">
+<button class="rps-btn" data-rps="rock">✊</button>
+<button class="rps-btn" data-rps="scissor">✌️</button>
+<button class="rps-btn" data-rps="paper">🖐️</button>
+</div>
+<div class="rps-result" id="rpsResult">等待出招</div>
+</div>
+<div id="gameGuess" style="display:none">
+<div class="guess-range">猜一个 1~100 之间的数字</div>
+<div class="guess-input">
+<input type="number" id="guessInput" min="1" max="100" placeholder="?" value="50">
+<button class="game-btn" id="guessBtn">猜</button>
+</div>
+<div class="guess-result" id="guessResult">点击猜开始</div>
+</div>
+<div id="gameMemory" style="display:none">
+<div class="memory-grid" id="memoryGrid"></div>
+<div class="memory-state" id="memoryState">点击开始</div>
+</div>
+<div id="gameSlot" style="display:none">
+<div class="slot-reels" id="slotReels">
+<div class="slot-reel" id="slotR1">🍒</div>
+<div class="slot-reel" id="slotR2">🍒</div>
+<div class="slot-reel" id="slotR3">🍒</div>
+</div>
+<button class="game-btn" id="slotBtn" style="display:block;margin:0 auto;">🎰 转!</button>
+<div class="slot-result" id="slotResult">点击转动</div>
+</div>
+<div class="tip-area" id="tipArea">每个选择都有代价</div>
+</div></div>
+<!-- BOTTOM BAR -->
+<div class="bottom-bar" id="bottomBar">
+<button class="continue-btn" id="continueBtn">▼ 继续剧情</button>
+<button class="npc-quick-btn" id="npcQuickBtn">💬 NPC对话</button>
+<button class="npc-quick-btn" id="resumeAIBtn" style="display:none;background:#c44;color:white;">▶ 继续推演</button>
+</div>
+<!-- NPC UNLOCK TOAST -->
+<div class="npc-unlock-toast" id="npcUnlockToast">
+<span class="toast-text">📢 新人物 <strong id="unlockNpcName">---</strong> 出现了！</span>
+<button class="toast-btn" id="unlockTalkBtn">对话</button>
+<button class="toast-dismiss" id="unlockDismissBtn">✕</button>
+</div>
+<!-- NPC PANEL -->
+<div class="npc-panel" id="npcModal">
+<div class="chat-window">
+<div class="chat-header"><span id="npcDialogName">NPC对话</span><span style="font-size:0.6rem;opacity:0.4;margin:0 6px;">拖拽移动</span><button class="close-btn" id="closeModalBtn">&#10005;</button></div>
+<div style="display:flex;gap:4px;padding:0.3rem 0.6rem;background:#e8ddd2;">
+<input type="text" id="npcSearch" placeholder="搜索NPC..." style="flex:1;border:1px solid rgba(0,0,0,0.06);border-radius:20px;padding:4px 10px;font-size:0.7rem;outline:none;background:white;">
+<button id="npcRandomBtn" style="background:var(--accent);color:white;border:none;border-radius:20px;padding:4px 10px;font-size:0.65rem;cursor:pointer;white-space:nowrap;font-weight:600;">+随机</button>
+</div>
+<div class="npc-picker" id="npcPicker"></div>
+<div class="npc-status" id="npcStatus"><span class="npc-name">---</span> 等待对话</div>
+<div class="affinity-bar" id="affinityBar">
+<span class="affinity-item"><span class="label">好感</span><span class="value good" id="npcAffinity">0</span></span>
+<span class="affinity-item"><span class="label">黑化</span><span class="value bad" id="npcDark">0</span></span>
+</div>
+<div class="chat-messages" id="chatMessages"></div>
+<div class="chat-input-area"><input type="text" id="chatInput" placeholder="输入对话..." autocomplete="off"><button id="sendChatBtn">发送</button></div>
+</div></div>
+<!-- geometric bg -->
+<div class="geo-bg" id="geoBg">
+<div class="geo-shape" style="width:250px;height:250px;top:-5%;left:-5%;border-radius:40%;background:var(--accent);--dur:22s;"></div>
+<div class="geo-shape" style="width:180px;height:180px;top:60%;right:-3%;border-radius:50%;background:var(--story-color);--dur:18s;"></div>
+<div class="geo-shape" style="width:120px;height:120px;bottom:10%;left:15%;border-radius:20%;background:var(--accent-light);--dur:26s;"></div>
+<div class="geo-shape" style="width:200px;height:200px;top:20%;right:25%;border-radius:50%;background:var(--accent);--dur:30s;"></div>
+<div class="geo-shape" style="width:80px;height:80px;bottom:30%;right:10%;border-radius:20%;background:var(--story-color);--dur:14s;"></div>
+</div>
+<!-- HINT TOAST -->
+<div class="hint-toast" id="hintToast"></div>
+<script>
+// ===== STATE =====
+let conversationHistory=[], lastOptions=[], lastMainOptions=[];
+let isWaiting=false, gamePhase='setup', setupStep=0;
+let npcModeActive=false, currentNpcName='', playerName='';
+let selectedWorld='', selectedGender='', selectedPlotline='';
+let dialogCount=0, gameDay=1, gameTimeIdx=0;
+let deathCrisis=false, deathCrisisOptions=[];
+let playerAttrs={charm:65,intel:72,strength:48,luck:55,affinity:0,dark:0};
+const timePeriods=['清晨','上午','正午','下午','傍晚','夜晚','深夜'];
+let npcData={};
+let maleLeadKey='';
+let lastPreviewText='', lastRawResponse='';
+let thinkingAutoShow=true;
+let pendingUnlockNpcKey='';
+// minesweeper
+let mr=8,mc=8,mt=8,board=[],rev=[],flg=[],go=false,win=false,ts=0,ti=null;
+let tips=['好感度决定命运','黑化值超过100即死','重生男主戒备心强','幸运影响随机事件','属性影响剧情分支','每个选择都有代价','斜体是内心独白','压迫源藏在细节里','礼物能大幅降黑化','深度互动刷好感','前三个任务最关键','偶遇男主要自然','男主随时可能暴起杀人','一次黑化+10以上会触发生死危机','只有1个生门选项'], tipIdx=0;
+// tap game
+let tapCoins=0,tapLevel=1,tapPerClick=1,tapNeed=10;
+// pause
+let aiAbortController=null,isPaused=false;
+// ===== DOM =====
+const $=id=>document.getElementById(id);
+const sidebar=$('sidebar'),sToggle=$('sidebarToggle');
+const storyArea=$('storyArea'),mainArea=$('mainArea');
+const optModal=$('optionsModal'),popPrev=$('popupPreview'),popOpts=$('popupOptions');
+const phQuest=$('phaseQuest'),phAction=$('phaseAction'),closePop=$('closePopupBtn');
+const continueBtn=$('continueBtn'),npcQuickBtn=$('npcQuickBtn');
+const keyIn=$('apiKeyInput'),modelSel=$('modelSelect'),tempS=$('temperature'),tempV=$('tempVal');
+const maxT=$('maxTokens'),topP=$('topP'),presP=$('presencePenalty');
+const saveBtn=$('saveApiBtn'),testBtn=$('testApiBtn'),corsP=$('corsProxySelect'),platS=$('apiPlatform');
+const attrP=$('attrPanel'),hideAttr=$('hideAttrBtn'),attrTog=$('attrPanelToggle'),scrollTog=$('autoScrollToggle'),streamTog=$('streamToggle');
+const expW=$('exportWordBtn'),expJ=$('exportJsonBtn'),impBtn=$('importBtn'),fInp=$('fileInput'),clrBtn=$('clearBtn');
+const themeBtn=$('themeToggleBtn'),resetTh=$('resetThemeBtn');
+const cAcc=$('customAccent'),cStory=$('customStoryColor');
+const upBg=$('uploadBgBtn'),bgInp=$('bgFileInput'),resBg=$('resetBgBtn');
+const upFnt=$('uploadFontBtn'),fntInp=$('fontFileInput'),resFnt=$('resetFontBtn'),fSize=$('fontSizeSlider'),sizeV=$('sizeVal');
+const loadO=$('loadingOverlay'),progB=$('progressBar'),progL=$('progressLabel');
+const tipA=$('tipArea'),mGrid=$('mineGrid'),mCnt=$('mineCount'),mTim=$('mineTimer'),mRst=$('mineRestart');
+const npcM=$('npcModal'),npcP=$('npcPicker'),npcS=$('npcStatus');
+const npcA=$('npcAffinity'),npcD=$('npcDark'),affB=$('affinityBar');
+const chatD=$('chatMessages'),chatI=$('chatInput'),sendB=$('sendChatBtn'),closeM=$('closeModalBtn');
+const gameMine=$('gameMine'),gameTap=$('gameTap'),tabM=$('tabMine'),tabT=$('tabTap');
+const gameRps=$('gameRps'),gameGuess=$('gameGuess'),gameMemory=$('gameMemory'),gameSlot=$('gameSlot');
+const tabR=$('tabRps'),tabG=$('tabGuess'),tabMem=$('tabMemory'),tabS=$('tabSlot');
+const tBtn=$('tapBtn'),tCoin=$('tapCoins'),tLvl=$('tapLevel'),tPer=$('tapPerClick'),tBar=$('tapBar'),tUp=$('tapLevelUp'),lotBtn=$('lotteryBtn'),lotRes=$('lotteryResult');
+const rpsRes=$('rpsResult'),guessInp=$('guessInput'),guessBtn=$('guessBtn'),guessRes=$('guessResult'),memGrid=$('memoryGrid'),memState=$('memoryState'),slotR1=$('slotR1'),slotR2=$('slotR2'),slotR3=$('slotR3'),slotBtn=$('slotBtn'),slotRes=$('slotResult');
+const scoreDisp=$('scoreDisplay'),scoreLotBtn=$('scoreLotteryBtn'),lotModal=$('lotteryModal'),lotDraw=$('lotteryDrawBtn'),lotClose=$('lotteryCloseBtn'),lotResultDisp=$('lotteryResultDisplay'),lotBalance=$('lotteryBalance');
+const thinkBox=$('thinkingBox'),thinkToggle=$('thinkingToggle'),thinkContent=$('thinkingContent');
+const pauseBtn=$('pauseAIBtn'),resumeBtn=$('resumeAIBtn');
+const darkBarFill=$('darkBarFill'),autoHideToggle=$('autoHideToggle');
+const unlockToast=$('npcUnlockToast'),unlockName=$('unlockNpcName'),unlockTalk=$('unlockTalkBtn'),unlockDismiss=$('unlockDismissBtn');
+const leadDarkIndicator=$('leadDarkIndicator');
+
+// ===== MODELS =====
+const pModels={
+    siliconflow:[
+        {v:"Qwen/Qwen2.5-7B-Instruct",t:"Qwen2.5-7B"},
+        {v:"Pro/deepseek-ai/DeepSeek-V3",t:"DeepSeek-V3"},
+        {v:"deepseek-ai/DeepSeek-R1",t:"DeepSeek-R1"},
+        {v:"Qwen/Qwen2.5-14B-Instruct",t:"Qwen2.5-14B"},
+        {v:"Qwen/QwQ-32B",t:"QwQ-32B"},
+        {v:"Qwen/Qwen2.5-72B-Instruct",t:"Qwen2.5-72B"},
+        {v:"Telechat/Telechat-7B",t:"Telechat-7B"},
+        {v:"01-ai/Yi-34B-Chat",t:"Yi-34B"}
+    ],
+    modelscope:[
+        {v:"Qwen/Qwen2.5-7B-Instruct",t:"Qwen2.5-7B"},
+        {v:"deepseek-ai/DeepSeek-V3",t:"DeepSeek-V3"},
+        {v:"deepseek-ai/DeepSeek-R1",t:"DeepSeek-R1"},
+        {v:"Qwen/Qwen2.5-72B-Instruct",t:"Qwen2.5-72B"},
+        {v:"Qwen/QwQ-32B",t:"QwQ-32B"}
+    ],
+    openai:[
+        {v:"gpt-4o",t:"GPT-4o"},
+        {v:"gpt-4o-mini",t:"GPT-4o-mini"},
+        {v:"gpt-4-turbo",t:"GPT-4 Turbo"},
+        {v:"gpt-4",t:"GPT-4"},
+        {v:"gpt-3.5-turbo",t:"GPT-3.5 Turbo"}
+    ],
+    deepseek:[
+        {v:"deepseek-chat",t:"DeepSeek V3"},
+        {v:"deepseek-reasoner",t:"DeepSeek R1"}
+    ],
+    moonshot:[
+        {v:"moonshot-v1-8k",t:"Moonshot v1 8K"},
+        {v:"moonshot-v1-32k",t:"Moonshot v1 32K"},
+        {v:"moonshot-v1-128k",t:"Moonshot v1 128K"}
+    ],
+    anthropic:[
+        {v:"claude-sonnet-4-20250514",t:"Claude Sonnet 4"},
+        {v:"claude-3-5-sonnet-20241022",t:"Claude 3.5 Sonnet"},
+        {v:"claude-3-opus-20240229",t:"Claude 3 Opus"},
+        {v:"claude-3-haiku-20240307",t:"Claude 3 Haiku"}
+    ],
+    google:[
+        {v:"gemini-2.5-pro-exp-03-25",t:"Gemini 2.5 Pro"},
+        {v:"gemini-2.0-flash",t:"Gemini 2.0 Flash"},
+        {v:"gemini-1.5-pro",t:"Gemini 1.5 Pro"},
+        {v:"gemini-1.5-flash",t:"Gemini 1.5 Flash"}
+    ]
+};
+function updM(p){const ms=pModels[p]||pModels.siliconflow;modelSel.innerHTML='';ms.forEach(m=>{const o=document.createElement('option');o.value=m.v;o.textContent=m.t;modelSel.appendChild(o);});}
+platS.onchange=()=>updM(platS.value);updM(platS.value);
+tempS.oninput=()=>{tempV.textContent=tempS.value;};
+
+// ===== THEME =====
+function applyT(a,s){document.documentElement.style.setProperty('--accent',a);document.documentElement.style.setProperty('--accent-light',a+'cc');document.documentElement.style.setProperty('--accent-glow',hexR(a,.12));document.documentElement.style.setProperty('--story-color',s);}
+function hexR(h,a){return `rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;}
+document.querySelectorAll('.color-dot').forEach(d=>{d.onclick=()=>{const g=d.parentElement;g.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('active'));d.classList.add('active');const t=d.dataset.color,v=d.dataset.val;if(t==='accent'){cAcc.value=v;applyT(v,cStory.value);localStorage.setItem('ui_a',v);}else{cStory.value=v;applyT(cAcc.value,v);localStorage.setItem('ui_s',v);}}});
+cAcc.oninput=()=>{document.querySelectorAll('.color-row:first-child .color-dot').forEach(d=>d.classList.remove('active'));applyT(cAcc.value,cStory.value);localStorage.setItem('ui_a',cAcc.value);};
+cStory.oninput=()=>{document.querySelectorAll('.color-row:last-child .color-dot').forEach(d=>d.classList.remove('active'));applyT(cAcc.value,cStory.value);localStorage.setItem('ui_s',cStory.value);};
+resetTh.onclick=()=>{applyT('#5ba3a0','#d4835a');cAcc.value='#5ba3a0';cStory.value='#d4835a';localStorage.removeItem('ui_a');localStorage.removeItem('ui_s');document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));};
+const sa=localStorage.getItem('ui_a'),ss=localStorage.getItem('ui_s');if(sa)cAcc.value=sa;if(ss)cStory.value=ss;applyT(cAcc.value,cStory.value);
+
+// ===== FONT SIZE =====
+fSize.oninput=()=>{const v=parseFloat(fSize.value);sizeV.textContent=v.toFixed(2);document.documentElement.style.setProperty('--story-size',v+'rem');localStorage.setItem('ui_size',v);};
+const sv=localStorage.getItem('ui_size');if(sv){fSize.value=sv;sizeV.textContent=parseFloat(sv).toFixed(2);document.documentElement.style.setProperty('--story-size',sv+'rem');}
+
+// ===== BG =====
+upBg.onclick=()=>bgInp.click();bgInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{document.body.classList.add('has-bg');document.body.style.setProperty('--bg-image',`url(${ev.target.result})`);localStorage.setItem('ui_bg',ev.target.result);showHint('背景已更新 · 支持PNG/JPG/GIF/WebP/SVG/BMP/AVIF');};r.readAsDataURL(f);};
+resBg.onclick=()=>{document.body.classList.remove('has-bg');document.body.style.removeProperty('--bg-image');localStorage.removeItem('ui_bg');showHint('背景已重置');};
+const sbg=localStorage.getItem('ui_bg');if(sbg){document.body.classList.add('has-bg');document.body.style.setProperty('--bg-image',`url(${sbg})`);}
+
+
+const bgBlurSlider=document.getElementById("bgBlurSlider");
+const blurValEl=document.getElementById("blurVal");
+if(bgBlurSlider&&blurValEl){
+bgBlurSlider.oninput=function(){var v=parseInt(this.value);document.documentElement.style.setProperty('--bg-blur',v+'px');blurValEl.textContent=v;localStorage.setItem('ui_bg_blur',v);};
+const sb=localStorage.getItem('ui_bg_blur');if(sb){bgBlurSlider.value=sb;blurValEl.textContent=sb;document.documentElement.style.setProperty('--bg-blur',sb+'px');}
+}
+
+// BG SIZE
+(function(){
+var ids = ["bgSizeCover","bgSizeContain","bgSizeFill"];
+ids.forEach(function(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('click', function(){
+    ids.forEach(function(x){ document.getElementById(x).classList.remove("active"); });
+    this.classList.add("active");
+    this.classList.add("pop");var self=this;setTimeout(function(){self.classList.remove("pop");},300);
+    var mode = this.dataset.mode;
+    document.body.style.backgroundSize = mode;
+    localStorage.setItem("ui_bg_size", mode);
+    showHint("背景适配 · " + ({cover:"铺满",contain:"适应",fill:"拉伸"}[mode] || mode));
+  });
+});
+var savedBgSize = localStorage.getItem("ui_bg_size");
+if(savedBgSize){
+  document.body.style.backgroundSize = savedBgSize;
+  var btn = document.querySelector("[data-mode='" + savedBgSize + "']");
+  if(btn){
+    ids.forEach(function(x){ document.getElementById(x).classList.remove("active"); });
+    btn.classList.add("active");
+  }
+}
+})();
+// ===== FONT =====
+upFnt.onclick=()=>fntInp.click();
+fntInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const s=document.createElement('style');s.id='cf';s.textContent=`@font-face{font-family:'CF';src:url('${ev.target.result}');}body,.story-text,.option-btn,.chat-bubble{font-family:'CF',var(--font),sans-serif!important;}`;const o=document.getElementById('cf');if(o)o.remove();document.head.appendChild(s);localStorage.setItem('ui_f',ev.target.result);};r.readAsDataURL(f);};
+resFnt.onclick=()=>{const o=document.getElementById('cf');if(o)o.remove();localStorage.removeItem('ui_f');};
+const sf=localStorage.getItem('ui_f');if(sf){const s=document.createElement('style');s.id='cf';s.textContent=`@font-face{font-family:'CF';src:url('${sf}');}body,.story-text,.option-btn,.chat-bubble{font-family:'CF',var(--font),sans-serif!important;}`;document.head.appendChild(s);}
+
+// ===== SIDEBAR =====
+window.addEventListener('resize',()=>{if(window.innerWidth>768)sidebar.classList.remove('mobile-open');});
+function toggleBody(el){const b=el.parentElement.querySelector('.s-body'),a=el.querySelector('.arrow');if(b)b.classList.toggle('hide');if(a)a.classList.toggle('open');}
+
+// ===== AUTO-HIDE SIDEBAR =====
+function toggleAutoHideSidebar(){
+    const chk=autoHideToggle.checked;
+    sidebar.classList.toggle('auto-hide-mode',chk);
+    sidebar.classList.remove('collapsed');
+    localStorage.setItem('ui_auto_hide',chk);
+    // Sync button
+    const btn=document.querySelector('[data-target="autoHideToggle"]');
+    if(btn)btn.classList.toggle('active',chk);
+}
+const savedAutoHide=localStorage.getItem('ui_auto_hide');
+if(savedAutoHide==='true'){autoHideToggle.checked=true;sidebar.classList.add('auto-hide-mode');document.querySelector('[data-target="autoHideToggle"]')?.classList.add('active');}
+sidebar.addEventListener('mouseenter',()=>{if(autoHideToggle.checked&&!sidebar.classList.contains('collapsed'))sidebar.classList.remove('auto-hide-mode');});
+sidebar.addEventListener('mouseleave',()=>{if(autoHideToggle.checked&&!sidebar.classList.contains('collapsed'))sidebar.classList.add('auto-hide-mode');});
+
+// ===== THINKING BOX =====
+function toggleThinking(){
+    thinkBox.classList.toggle('collapsed');
+    localStorage.setItem('ui_think_collapsed',thinkBox.classList.contains('collapsed'));
+}
+// thinking box auto-show is always on
+thinkToggle.onclick=toggleThinking;
+const savedThink=localStorage.getItem('ui_think_collapsed');
+if(savedThink==='true')thinkBox.classList.add('collapsed');
+const savedThinkShow=localStorage.getItem('ui_think_show');
+if(savedThinkShow!==null){thinkingAutoShow=savedThinkShow==='true';}
+
+function updateThinkingBox(rawText){
+    lastRawResponse=rawText;
+    if(!rawText||rawText.length<10){thinkContent.innerHTML='<span class="raw-text">等待AI响应...</span>';return;}
+    const truncated=rawText.length>800?rawText.slice(0,800)+'...':rawText;
+    thinkContent.innerHTML='<span class="raw-text">'+truncated.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</span>';
+    if(thinkingAutoShow)thinkBox.classList.remove('collapsed');
+}
+
+// ===== HINT TOAST =====
+let hintTimer=null;
+function showHint(text, duration){
+    const el=$('hintToast');
+    if(!el)return;
+    el.textContent=text;
+    el.classList.add('visible');
+    if(hintTimer)clearTimeout(hintTimer);
+    hintTimer=setTimeout(()=>el.classList.remove('visible'), duration||2000);
+}
+
+// ===== TOGGLE BUTTONS =====
+document.querySelectorAll('.toggle-btn').forEach(btn=>{
+    btn.onclick=()=>{
+        const tgtId=btn.dataset.target;
+        const cb=document.getElementById(tgtId);
+        if(!cb)return;
+        cb.checked=!cb.checked;
+        btn.classList.toggle('active',cb.checked);
+        // Fire original onchange (e.g. attrTog handles attrPanel visibility)
+        if(cb.onchange)cb.onchange();
+        // Show hint
+        const hint=btn.dataset.hint||btn.textContent.trim();
+        showHint(hint+' · '+(cb.checked?'已开启':'已关闭'));
+    };
+});
+// Sync toggle buttons with checkbox state on init
+function syncToggleBtns(){
+    document.querySelectorAll('.toggle-btn').forEach(btn=>{
+        const cb=document.getElementById(btn.dataset.target);
+        if(cb)btn.classList.toggle('active',cb.checked);
+    });
+}
+
+// ===== FIX SIDEBAR TOGGLE =====
+sToggle.onclick=function(){
+    if(window.innerWidth<=768){
+        sidebar.classList.remove('auto-hide-mode','collapsed');
+        sidebar.classList.toggle('mobile-open');
+        if(sidebar.classList.contains('mobile-open'))showHint('侧边栏已打开');
+    } else {
+        // If auto-hide is on, disable it first
+        if(autoHideToggle.checked){
+            autoHideToggle.checked=false;
+            sidebar.classList.remove('auto-hide-mode');
+            localStorage.setItem('ui_auto_hide','false');
+            document.querySelector('[data-target="autoHideToggle"]')?.classList.remove('active');
+            showHint('自动隐藏已关闭，点击侧边栏按钮可切换');
+        }
+        const nowHidden=sidebar.classList.toggle('collapsed');
+        showHint(nowHidden?'侧边栏已收起':'侧边栏已展开');
+    }
+};
+
+// ===== WATER RIPPLE =====
+function waterRipple(e){
+    const rect=mainArea.getBoundingClientRect();
+    const x=(e.clientX||e.touches?.[0]?.clientX||0)-rect.left;
+    const y=(e.clientY||e.touches?.[0]?.clientY||0)-rect.top;
+    const r=document.createElement('div');r.className='water-ripple';
+    const size=Math.min(rect.width,rect.height)*0.15;
+    r.style.width=r.style.height=size+'px';
+    r.style.left=(x-size/2)+'px';r.style.top=(y-size/2)+'px';
+    mainArea.appendChild(r);setTimeout(()=>r.remove(),900);
+}
+mainArea.addEventListener('click',waterRipple);
+mainArea.addEventListener('touchstart',waterRipple,{passive:true});
+
+// ===== GAME TABS =====
+let curGame='mine';
+function switchGameTab(game){
+    var tabs={mine:tabM,tap:tabT,rps:tabR,guess:tabG,memory:tabMem,slot:tabS};
+    var panels={mine:gameMine,tap:gameTap,rps:gameRps,guess:gameGuess,memory:gameMemory,slot:gameSlot};
+    Object.keys(tabs).forEach(function(k){
+        tabs[k].className='game-tab'+(k===game?' active':'');
+        panels[k].style.display=k===game?'':'none';
+    });
+    curGame=game;
+    if(game==='tap')initTap();
+    if(game==='memory')initMemory();
+}
+tabM.onclick=function(){switchGameTab('mine');};
+tabT.onclick=function(){switchGameTab('tap');};
+tabR.onclick=function(){switchGameTab('rps');};
+tabG.onclick=function(){switchGameTab('guess');};
+tabMem.onclick=function(){switchGameTab('memory');};
+tabS.onclick=function(){switchGameTab('slot');};
+function initTap(){tapCoins=0;tapLevel=1;tapPerClick=1;tapNeed=10;updTap();}
+function updTap(){
+    tCoin.textContent=tapCoins;tLvl.textContent=tapLevel;tPer.textContent=tapPerClick;
+    const pct=Math.min(100,(tapCoins/tapNeed)*100);tBar.style.width=pct+'%';
+    if(tapCoins>=tapNeed){
+        tapLevel++;tapPerClick++;tapCoins=0;tapNeed=Math.floor(tapNeed*1.4);
+        tUp.textContent='升级! 等级 '+tapLevel;
+        setTimeout(()=>tUp.textContent='',1500);
+        updTap();
+    }
+}
+tBtn.onmousedown=()=>{tapCoins+=tapPerClick;updTap();};
+const lotPrizes=[
+    {text:'✨ 魅力+3',fn:()=>{playerAttrs.charm+=3;$('attr_charm').textContent=playerAttrs.charm;}},
+    {text:'🎯 幸运+3',fn:()=>{playerAttrs.luck+=3;$('attr_luck').textContent=playerAttrs.luck;}},
+    {text:'💫 智力+3',fn:()=>{playerAttrs.intel+=3;$('attr_intel').textContent=playerAttrs.intel;}},
+    {text:'🍀 下次抽奖双倍概率'},
+    {text:'📖 线索：留意NPC的眼神',fn:()=>{}},
+    {text:'🌸 什么都没发生，下次好运'}
+];
+lotBtn.onclick=()=>{
+    if(tapCoins<10){lotRes.textContent='金币不够!';setTimeout(()=>lotRes.textContent='',1500);return;}
+    tapCoins-=10;updTap();
+    const roll=Math.random(),prize=roll<0.05?lotPrizes[0]:roll<0.15?lotPrizes[1]:roll<0.3?lotPrizes[2]:roll<0.5?lotPrizes[3]:roll<0.7?lotPrizes[4]:lotPrizes[5];
+    if(prize.fn)prize.fn();
+    lotRes.textContent=prize.text;
+    setTimeout(()=>lotRes.textContent='',2500);
+};
+
+// ===== MINESWEEPER =====
+function initMine(){
+    mGrid.innerHTML='';go=false;win=false;board=[];rev=[];flg=[];if(ti){clearInterval(ti);ti=null;}ts=0;mTim.textContent='0';mCnt.textContent=mt;
+    const p=new Set();while(p.size<mt)p.add(Math.floor(Math.random()*mr*mc));
+    for(let r=0;r<mr;r++){board[r]=[];rev[r]=[];flg[r]=[];for(let c=0;c<mc;c++){board[r][c]=p.has(r*mc+c)?-1:0;rev[r][c]=false;flg[r][c]=false;}}
+    for(let r=0;r<mr;r++)for(let c=0;c<mc;c++){if(board[r][c]===-1)continue;let n=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<mr&&nc>=0&&nc<mc&&board[nr][nc]===-1)n++;}board[r][c]=n;}
+    renderMine();
+}
+function renderMine(){mGrid.style.gridTemplateColumns=`repeat(${mc},1fr)`;mGrid.innerHTML='';for(let r=0;r<mr;r++)for(let c=0;c<mc;c++){const e=document.createElement('div');e.className='mine-cell';e.onclick=()=>revM(r,c);e.oncontextmenu=ev=>{ev.preventDefault();flgM(r,c);};mGrid.appendChild(e);}}
+function upCell(r,c){const i=r*mc+c,e=mGrid.children[i];if(!e)return;if(rev[r][c]){e.classList.add('revealed');if(board[r][c]===-1){e.innerHTML='&#x1f4a3;';e.classList.add('boom');}else if(board[r][c]>0){e.textContent=board[r][c];e.classList.add('mine-count-'+board[r][c]);}else e.textContent='';}else if(flg[r][c]){e.innerHTML='&#x1f6a9;';e.classList.add('flag');}else{e.innerHTML='';e.className='mine-cell';}}
+function revM(r,c){if(go||win||rev[r][c]||flg[r][c])return;if(!ti){ti=setInterval(()=>{ts++;mTim.textContent=ts;},1000);}if(board[r][c]===-1){go=true;if(ti){clearInterval(ti);ti=null;}for(let rr=0;rr<mr;rr++)for(let cc=0;cc<mc;cc++)if(board[rr][cc]===-1){rev[rr][cc]=true;upCell(rr,cc);}return;}revC(r,c);chkWin();}
+function revC(r,c){if(r<0||r>=mr||c<0||c>=mc||rev[r][c]||flg[r][c])return;rev[r][c]=true;upCell(r,c);if(board[r][c]===0)for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)revC(r+dr,c+dc);}
+function flgM(r,c){if(go||win||rev[r][c])return;flg[r][c]=!flg[r][c];upCell(r,c);let n=0;for(let rr=0;rr<mr;rr++)for(let cc=0;cc<mc;cc++)if(flg[rr][cc])n++;mCnt.textContent=mt-n;}
+function chkWin(){let n=0;for(let r=0;r<mr;r++)for(let c=0;c<mc;c++)if(rev[r][c])n++;if(n===mr*mc-mt){win=true;if(ti){clearInterval(ti);ti=null;}tipA.innerHTML='扫雷胜利!';}}
+mRst.onclick=initMine;
+
+// ===== RPS (猜拳) =====
+rpsRes.textContent='选一个出招';
+document.querySelectorAll('.rps-btn').forEach(function(b){
+    b.onclick=function(){
+        var choices=['rock','scissor','paper'],emojiMap={rock:'✊',scissor:'✌️',paper:'🖐️'};
+        var player=this.dataset.rps,computer=choices[Math.floor(Math.random()*3)];
+        var winMap={rock:'scissor',scissor:'paper',paper:'rock'};
+        var result=player===computer?'平局':winMap[player]===computer?'你赢了':'你输了';
+        rpsRes.textContent='你出'+emojiMap[player]+' vs '+emojiMap[computer]+' —— '+result;
+    };
+});
+
+// ===== GUESS NUMBER (猜数) =====
+var guessTarget=Math.floor(Math.random()*100)+1,guessAttempts=0;
+guessInp.onfocus=function(){this.value='';};
+guessBtn.onclick=function(){
+    var val=parseInt(guessInp.value);
+    if(isNaN(val)||val<1||val>100){guessRes.textContent='请输入 1~100';return;}
+    guessAttempts++;
+    if(val===guessTarget){guessRes.textContent='✅ 猜中了! 用了'+guessAttempts+'次';guessTarget=Math.floor(Math.random()*100)+1;guessAttempts=0;}
+    else if(val<guessTarget)guessRes.textContent='⬆️ 小了, 再试试 (第'+guessAttempts+'次)';
+    else guessRes.textContent='⬇️ 大了, 再试试 (第'+guessAttempts+'次)';
+};
+
+// ===== MEMORY (记忆翻牌) =====
+var memCards=[],memFlipped=[],memMatched=[],memLock=false,memPairs=0;
+function initMemory(){
+    memGrid.innerHTML='';memFlipped=[];memMatched=[];memLock=false;memPairs=0;
+    var symbols=['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'];
+    memCards=[];
+    symbols.forEach(function(s,i){
+        memCards.push({id:i*2,symbol:s,matched:false});
+        memCards.push({id:i*2+1,symbol:s,matched:false});
+    });
+    for(var i=memCards.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=memCards[i];memCards[i]=memCards[j];memCards[j]=t;}
+    memCards.forEach(function(c,idx){
+        var el=document.createElement('div');el.className='memory-card';el.dataset.idx=idx;
+        el.onclick=function(){flipMem(idx);};
+        memGrid.appendChild(el);
+    });
+    memState.textContent='翻牌找对 ('+symbols.length+'对)';
+}
+function flipMem(idx){
+    if(memLock||memFlipped.includes(idx)||memCards[idx].matched)return;
+    var el=memGrid.children[idx];el.textContent=memCards[idx].symbol;el.classList.add('flipped');
+    memFlipped.push(idx);
+    if(memFlipped.length===2){
+        memLock=true;
+        var a=memFlipped[0],b=memFlipped[1];
+        if(memCards[a].symbol===memCards[b].symbol){
+            memCards[a].matched=true;memCards[b].matched=true;
+            memGrid.children[a].classList.add('matched');memGrid.children[b].classList.add('matched');
+            memPairs++;memFlipped=[];
+            memState.textContent='✅ 找到一对! ('+memPairs+'/8)';
+            if(memPairs===8)memState.textContent='🎉 全部找到! 再点开始重玩';
+            memLock=false;
+        } else {
+            memState.textContent='❌ 不对应';
+            setTimeout(function(){
+                memGrid.children[a].textContent='';memGrid.children[a].classList.remove('flipped');
+                memGrid.children[b].textContent='';memGrid.children[b].classList.remove('flipped');
+                memFlipped=[];memLock=false;
+                memState.textContent='继续 ('+memPairs+'/8)';
+            },600);
+        }
+    }
+}
+
+// ===== SLOT MACHINE (老虎机) =====
+var slotIcons=['🍒','🍋','🍊','🍇','🔔','💎'];
+slotBtn.onclick=function(){
+    slotBtn.disabled=true;slotRes.textContent='转动中...';
+    var r1=slotIcons[Math.floor(Math.random()*slotIcons.length)];
+    var r2=slotIcons[Math.floor(Math.random()*slotIcons.length)];
+    var r3=slotIcons[Math.floor(Math.random()*slotIcons.length)];
+    setTimeout(function(){
+        slotR1.textContent=r1;slotR2.textContent=r2;slotR3.textContent=r3;
+        if(r1===r2&&r2===r3)slotRes.textContent='🎉 三连! 全部相同!';
+        else if(r1===r2||r2===r3||r1===r3)slotRes.textContent='✨ 两个相同! 接近了';
+        else slotRes.textContent='💫 下次好运';
+        slotBtn.disabled=false;
+    },300);
+};
+
+// ===== INTEGRAL SYSTEM (积分) =====
+var playerScore=parseInt(localStorage.getItem('player_score'))||0;
+function updateScoreDisplay(){scoreDisp.textContent=playerScore;lotBalance.textContent='余额：'+playerScore+' 积分';localStorage.setItem('player_score',playerScore);}
+updateScoreDisplay();
+var scoreLotteryPool=[
+    {text:'💖 心动信物 ×1',fn:function(){showHint('获得心动信物! 可送给男主+好感',2000);}},
+    {text:'✨ 随机属性 +10',fn:function(){var keys=['charm','intel','strength','luck'],k=keys[Math.floor(Math.random()*keys.length)];playerAttrs[k]+=10;$('attr_'+k).textContent=playerAttrs[k];showHint(k+' +10!',1500);}},
+    {text:'🤝 随机NPC好感 +20',fn:function(){showHint('好感度提升机会!',1500);}},
+    {text:'🔮 后果查看卡',fn:function(){showHint('获得后果查看卡! 可查看后果百分比',2000);}},
+    {text:'🌟 随机属性 +5',fn:function(){var keys=['charm','intel','strength','luck'],k=keys[Math.floor(Math.random()*keys.length)];playerAttrs[k]+=5;$('attr_'+k).textContent=playerAttrs[k];showHint(k+' +5!',1500);}},
+    {text:'🌀 命运交织卡',fn:function(){showHint('命运交织卡! 触发与男主的非日常偶遇',2000);}},
+    {text:'📍 定位卡',fn:function(){showHint('获得定位卡! 移动到男主附近',1500);}},
+    {text:'🏠 生活便利卡',fn:function(){showHint('生活便利卡! 考试通过/租金减半',2000);}},
+    {text:'📜 世界观珍藏卡',fn:function(){showHint('世界观珍藏卡! 获得一段独特记忆',2000);}},
+    {text:'💔 黑化值 -3',fn:function(){if(maleLeadKey&&npcData[maleLeadKey]){npcData[maleLeadKey].dark=Math.max(0,(npcData[maleLeadKey].dark||0)-3);refreshLeadDarkIndicator();showHint('男主黑化值-3!',1500);}else showHint('尚未遇到男主',1500);}}
+];
+scoreLotBtn.onclick=function(){lotModal.classList.add('active');updateScoreDisplay();};
+lotClose.onclick=function(){lotModal.classList.remove('active');};
+lotModal.onclick=function(e){if(e.target===lotModal)lotModal.classList.remove('active');};
+lotDraw.onclick=function(){
+    if(playerScore<20){lotResultDisp.textContent='积分不足! 完成剧情获取积分';return;}
+    playerScore-=20;updateScoreDisplay();
+    var roll=Math.random(),prize;
+    if(roll<0.03)prize=0;
+    else if(roll<0.08)prize=1;
+    else if(roll<0.15)prize=2;
+    else if(roll<0.25)prize=3;
+    else if(roll<0.38)prize=4;
+    else if(roll<0.50)prize=5;
+    else if(roll<0.62)prize=6;
+    else if(roll<0.75)prize=7;
+    else if(roll<0.87)prize=8;
+    else prize=9;
+    var p=scoreLotteryPool[prize];
+    if(p.fn)p.fn();
+    lotResultDisp.textContent=p.text;
+};
+
+// ===== LOADING =====
+function showLoad(label){
+    loadO.classList.add('active');progB.style.width='0%';progL.textContent=label||'连接中...';
+    if(curGame==='mine')initMine();else initTap();
+    const t=setInterval(()=>{tipIdx=(tipIdx+1)%tips.length;tipA.textContent=tips[tipIdx];},3000);
+    loadO._t=t;let p=0;
+    const pi=setInterval(()=>{if(p>=90){clearInterval(pi);return;}p+=Math.random()*8+1;if(p>90)p=90;progB.style.width=p+'%';},400);
+    loadO._pi=pi;
+}
+function hideLoad(){
+    progB.style.width='100%';progL.textContent='完成';
+    if(loadO._t)clearInterval(loadO._t);if(loadO._pi)clearInterval(loadO._pi);
+    if(ti){clearInterval(ti);ti=null;}
+    setTimeout(()=>loadO.classList.remove('active'),200);
+}
+
+// ===== STRIP EMOJIS =====
+function stripEmoji(t){return t.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2700}-\u{27BF}]|[\u{2600}-\u{26FF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]/gu,'').replace(/\s+/g,' ').trim();}
+
+// ===== TIME =====
+function advanceTime(){
+    gameTimeIdx++;if(gameTimeIdx>=timePeriods.length){gameTimeIdx=0;gameDay++;}
+}
+function getTimeStr(){return '◇ 第'+gameDay+'日 '+timePeriods[gameTimeIdx]+' ◇';}
+function updateAttrsFromText(text){
+    if(text&&maleLeadKey&&npcData[maleLeadKey]){
+        var dm=text.match(/(?:黑化值|黑化)\s*[+:=]\s*(\d+)/i);
+        if(dm)npcData[maleLeadKey].dark=parseInt(dm[1]);
+        var dm2=text.match(/当前黑化值[：:]\s*(\d+)/);
+        if(dm2)npcData[maleLeadKey].dark=parseInt(dm2[1]);
+    }
+    const reMap=[
+        {el:'attr_affinity',re:/当前好感度[：:]\s*(-?\d+)/},
+        {el:'attr_dark',re:/当前黑化值[：:]\s*(\d+)/}
+    ];
+    for(const r of reMap){
+        const m=text.match(r.re);
+        if(m){const v=parseInt(m[1]);if(!isNaN(v)){playerAttrs[r.el==='attr_affinity'?'affinity':'dark']=v;$(r.el).textContent=v;}}
+    }
+    const darkEl=$('attr_dark');
+    if(parseInt(darkEl.textContent)>50)darkEl.classList.add('danger');else darkEl.classList.remove('danger');
+    refreshLeadDarkIndicator();
+}
+
+// ===== STREAMING / TYPEWRITER =====
+function typewriteStory(container, htmlContent, speed=35){
+    return new Promise(resolve=>{
+        if(!streamTog.checked){container.innerHTML=htmlContent;resolve();return;}
+        container.innerHTML='<span class="cursor"></span>';
+        const chars=htmlContent.split('');
+        let out='', idx=0, inTag=false, tagBuf='';
+        let cursor=container.querySelector('.cursor');
+        function tick(){
+            if(idx>=chars.length){if(cursor)cursor.remove();resolve();return;}
+            const ch=chars[idx];
+            if(ch==='<')inTag=true;
+            if(inTag){
+                tagBuf+=ch;
+                if(ch==='>'){inTag=false;out+=tagBuf;tagBuf='';container.innerHTML=out+'<span class="cursor"></span>';cursor=container.querySelector('.cursor');}
+            } else {
+                out+=ch;container.innerHTML=out+'<span class="cursor"></span>';cursor=container.querySelector('.cursor');
+                if(container.scrollHeight>container.clientHeight+20)container.scrollTop=container.scrollHeight;
+            }
+            idx++;
+            setTimeout(tick,inTag?2:(speed+Math.random()*15));
+        }
+        tick();
+    });
+}
+
+// ===== CHUNK STORY =====
+function chunkStory(text,maxLen){
+    if(!text||text.length<=maxLen)return[text];
+    const parts=text.split(/(?<=[。！？\n\r])/);
+    const chunks=[];let cur='';
+    for(const p of parts){
+        if(!p.trim()){cur+=p;continue;}
+        if(cur.length+p.length>maxLen&&cur.length>0){chunks.push(cur.trim());cur=p;}
+        else{cur+=p;}
+    }
+    if(cur.trim())chunks.push(cur.trim());
+    const result=[];
+    for(const c of chunks){
+        if(c.length>maxLen*1.3){for(let i=0;i<c.length;i+=maxLen)result.push(c.slice(i,i+maxLen));}
+        else result.push(c);
+    }
+    return result.length>0?result:[text];
+}
+
+// ===== STORY =====
+async function addStoryStream(text, role='assistant'){
+    text=text.replace(/^#{1,6}\s*/gm,'').replace(/^={3,}.*$/gm,'').replace(/^-{3,}.*$/gm,'');
+    text=text.replace(/```[\s\S]*?```/g,'').replace(/`([^`]*)`/g,'$1');
+    // capture unlock tags before stripping
+    let unlockedName='';
+    text=text.replace(/【解锁男主:([^】]+)】/g,(m,name)=>{
+        const trimmed=name.trim();
+        if(trimmed){
+            const key='ml_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+            maleLeadKey=key;
+            npcData[key]={name:trimmed,unlocked:true,history:[],chatMessages:[],affinity:0,dark:0,desc:'重要人物',isMaleLead:true};
+            unlockedName=trimmed;
+        }
+        return '';
+    });
+    text=text.replace(/【解锁NPC:([^】]+)】/g,(m,name)=>{
+        const trimmed=name.trim();
+        if(trimmed&&!Object.values(npcData).some(n=>n.name===trimmed)){
+            const key='dyn_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+            npcData[key]={name:trimmed,unlocked:true,history:[],chatMessages:[],affinity:0,dark:0,desc:'出现的新角色',isMaleLead:false};
+            unlockedName=trimmed;
+        }
+        return '';
+    });
+    text=text.replace(/【[^】]*】/g,'');
+    text=text.replace(/\[[^\]]*\]/g,'');
+    text=text.replace(/\*+/g,'');
+    text=text.replace(/^\s*\d+\s*[\.\、\)\）\s]\s*\S.+/gm,'');
+    text=text.replace(/^\s*(?:选项|行为|行动)[：:].*/gm,'');
+    const chunks=chunkStory(text,200);
+    if(!chunks||chunks.length===0)return;
+    const timeDiv=document.createElement('div');timeDiv.className='time-display';timeDiv.textContent=getTimeStr();
+    storyArea.appendChild(timeDiv);
+    for(let ci=0;ci<chunks.length;ci++){
+        const d=document.createElement('div');d.className='message '+role;
+        let formatted=chunks[ci].replace(/([。！？；;…]+)(\s*)/g,'$1\n');
+        formatted=formatted.replace(/\n{2,}/g,'\n').replace(/\n/g,'<br>');
+        d.innerHTML='<div class="story-text"></div>';
+        storyArea.appendChild(d);
+        if(scrollTog.checked)setTimeout(()=>storyArea.scrollTop=storyArea.scrollHeight,50);
+        const st=d.querySelector('.story-text');
+        await typewriteStory(st,formatted);
+    }
+    // if NPC was unlocked, show dialogue prompt
+    if(unlockedName)showNpcUnlockToast(unlockedName);
+    refreshLeadDarkIndicator();
+}
+
+function showNpcUnlockToast(name){
+    unlockName.textContent=name;
+    const key=Object.keys(npcData).find(k=>npcData[k].name===name);
+    if(key)pendingUnlockNpcKey=key;
+    unlockToast.classList.add('visible');
+    setTimeout(()=>{unlockToast.classList.remove('visible');},8000);
+}
+unlockTalk.onclick=()=>{
+    unlockToast.classList.remove('visible');
+    if(pendingUnlockNpcKey){if(!npcModeActive)startNPC();swNpc(pendingUnlockNpcKey);}
+};
+unlockDismiss.onclick=()=>{unlockToast.classList.remove('visible');};
+
+// ===== SPLIT STORY vs OPTIONS =====
+function isOptionLine(t){
+    if(!t) return false;
+    const stripped=t.replace(/^[【\[][^\]】]+[】\]]\s*/,'').trim();
+    if(/^(?:行为选择|行动选择|主线任务|剧情选项|生死危机|选项|当前任务|任务进度|目标|当前目标)/.test(stripped)) return true;
+    if(/^[=#~\-]{3,}\s*.*$/.test(stripped)) return true;
+    if(/^\d+\s*[\.、\)\）\s]\s*\S/.test(stripped)) return true;
+    if(/^[①-⑳]/.test(stripped)) return true;
+    if(/^[一二三四五六七八九十]+\s*[\.、\)\）\s]/.test(stripped)) return true;
+    if(/^[0-9０-９]️⃣/.test(stripped)) return true;
+    if(/^[✦\-\*•·]\s*\S/.test(stripped) && stripped.length < 100) return true;
+    if(/^[一-鿿]{2,}$/u.test(stripped) && stripped.length<20 && !/[。！？；：、，…]/.test(stripped)) return true;
+    if(/^\[.+\]$/.test(stripped) && stripped.length<40) return true;
+    return false;
+}
+function splitAIResponse(text){
+    const lines=text.split(/\r?\n/);
+    deathCrisis=false;
+    // 1. death crisis check
+    for(let i=0;i<lines.length;i++){
+        const t=lines[i].trim();
+        if(/^---?\s*生死/.test(t)){deathCrisis=true;return{story:lines.slice(0,i).join('\n'),options:lines.slice(i+1).join('\n')};}
+        if(t.includes('---')){
+            const [before,after]=t.split(/-{3,}/,2);
+            if(/^\s*生死/.test(after.trim())){deathCrisis=true;return{story:lines.slice(0,i).join('\n'),options:after.trim()?after.trim()+'\n'+lines.slice(i+1).join('\n'):lines.slice(i+1).join('\n')};}
+        }
+    }
+    // 2. ===== headers
+    for(let i=0;i<lines.length;i++){
+        const t=lines[i].trim();
+        if(/^={3,}\s*(主线|行为|选项|任务)/.test(t))return{story:lines.slice(0,i).join('\n'),options:lines.slice(i+1).join('\n')};
+        const mEq=t.match(/^={3,}\s*(.+)$/);
+        if(mEq&&mEq[1].trim())return{story:lines.slice(0,i).join('\n'),options:[mEq[1].trim(),...lines.slice(i+1)].join('\n')};
+        if(t.includes('===')||t.includes('…')){
+            const parts=t.split(/={3,}/);
+            if(parts.length>1){
+                return{story:lines.slice(0,i).join('\n')+'\n'+parts[0].trim(),options:[parts.slice(1).join('===').trim(),...lines.slice(i+1)].join('\n')};
+            }
+        }
+    }
+    // 3. --- with keywords
+    for(let i=0;i<lines.length;i++){
+        const t=lines[i].trim();
+        if(/^-{3,}\s*(主线|行为|选项|任务)/.test(t))return{story:lines.slice(0,i).join('\n'),options:lines.slice(i+1).join('\n')};
+        const mDash=t.match(/^-{3,}\s*(.+)$/);
+        if(mDash&&mDash[1].trim())return{story:lines.slice(0,i).join('\n'),options:[mDash[1].trim(),...lines.slice(i+1)].join('\n')};
+        if(t.includes('---')){
+            const [before,after]=t.split(/-{3,}/,2);
+            if(after.trim())return{story:lines.slice(0,i).join('\n')+(before.trim()?before.trim():'').trim(),options:[after.trim(),...lines.slice(i+1)].join('\n')};
+        }
+    }
+    // 4. bare ---
+    for(let i=Math.floor(lines.length*0.4);i<lines.length;i++){
+        const t=lines[i].trim();
+        if(/^-{3,}\s*$/.test(t)&&lines.length-i>2)return{story:lines.slice(0,i).join('\n'),options:lines.slice(i+1).join('\n')};
+    }
+    // 5. bare headers
+    for(let i=0;i<lines.length;i++){const t=lines[i].trim();if((t.startsWith('主线任务')||t.startsWith('行为选择')||t.includes('行为选择')||t.includes('行为选项')||t.includes('行动选择')||t.includes('选项'))&&t.length<60)return{story:lines.slice(0,i).join('\n'),options:lines.slice(i+1).join('\n')};}
+    // 6. numbered options
+    for(let i=Math.max(lines.length-20,1);i<lines.length;i++){
+        const t=lines[i].trim();
+        if(/^\d+\s*[\.\、\)\）\s]\s*\S/.test(t)){
+            let count=1;
+            for(let j=i+1;j<Math.min(i+10,lines.length);j++){if(/^\d+\s*[\.\、\)\）\s]/.test(lines[j].trim()))count++;else break;}
+            if(count>=2)return{story:lines.slice(0,i).join('\n'),options:lines.slice(i).join('\n')};
+        }
+    }
+    // 7. action lines
+    for(let i=Math.max(lines.length-12,0);i<lines.length;i++){
+        const t=lines[i].trim();
+        if(/^[一-鿿]/.test(t)&&t.length>3&&t.length<40&&!/[。！？；：、，…\-\*#“”我]/.test(t)){
+            let count=1;
+            for(let j=i+1;j<Math.min(i+10,lines.length);j++){const tj=lines[j].trim();if(/^[一-鿿]/.test(tj)&&tj.length>3&&tj.length<40&&!/[。！？；：、，…\-\*#“”我]/.test(tj))count++;else break;}
+            if(count>=3&&i>0)return{story:lines.slice(0,i).join('\n'),options:lines.slice(i).join('\n')};
+        }
+    }
+    return{story:text,options:''};
+}
+
+function extractOptionLinesFromText(text){
+    const lines=text.split(/\r?\n/);
+    const extracted=[];
+    for(let i=lines.length-1;i>=0;i--){
+        const trimmed=lines[i].trim();
+        if(!trimmed) continue;
+        if(isOptionLine(trimmed)){
+            extracted.unshift(lines[i]);
+            continue;
+        }
+        if(extracted.length>0) break;
+    }
+    return extracted.length >= 2 ? extracted.join('\n').trim() : '';
+}
+
+function isActionCandidate(t){
+    const trimmed=t.trim();
+    return trimmed.length >= 6 && trimmed.length <= 90 && /[一-鿿]/.test(trimmed) && !/[。！？；：、，…]/.test(trimmed);
+}
+
+function splitInlineOptions(line){
+    const stripped=line.replace(/^[【\[][^】\]]+[】\]]\s*/,'').trim();
+    const parts=stripped.split(/\s{2,}|\s*[-·•]\s*|\s+\/\s+|\s+，\s+|\s+、\s+|\s+/).map(s=>s.trim()).filter(Boolean);
+    const candidates=parts.filter(isActionCandidate);
+    if(candidates.length > 1) return candidates;
+    return [line.trim()];
+}
+
+function stripOptionLinesFromText(text){
+    const lines=text.split(/\r?\n/);
+    const output=[];
+    for(const line of lines){
+        const trimmed=line.trim();
+        if(!trimmed) continue;
+        if(/^[-=#~]{3,}\s*$/.test(trimmed)) break;
+        if(trimmed.includes('---')){
+            const [before,after]=trimmed.split(/-{3,}/,2);
+            const beforeTrim=before.trim();
+            if(beforeTrim && !isOptionLine(beforeTrim)){
+                output.push(beforeTrim);
+            }
+            break;
+        }
+        const stripped=trimmed.replace(/^[【\[][^】\]]+[】\]]\s*/,'').trim();
+        if(isOptionLine(stripped)) continue;
+        output.push(line);
+    }
+    return output.join('\n').trim();
+}
+
+// ===== OPTIONS POPUP =====
+function parseOpts(text){
+    const lines=text.split(/\r?\n/);
+    let opts=[];
+    const isCrisis=deathCrisis;
+    for(const l of lines){
+        let t=l.trim();
+        if(!t||t.startsWith('*')||/^[=#\-]{2,}\s*/.test(t)||(t.includes('主线')&&t.length<20)||(t.includes('行为')&&t.length<20))continue;
+        t=t.replace(/^[【\[][^】\]]+[】\]]\s*/,'').trim();
+        let d='';
+        const m=t.match(/^\s*(\d+|[①-⑳]|[一二三四五六七八九十]+)\s*[\.、\)\）\s]\s*(.+)/);
+        if(m){d=m[2].trim();}
+        else{
+            const m2=t.match(/^\s*[-*•·]\s*(.+)/);
+            if(m2){d=m2[1].trim();}
+            else if(/^[一-鿿]/.test(t)&&t.length>3&&t.length<100&&!/[。！？；：、，…#我]/.test(t)){
+                d=t;
+            }
+        }
+        if(!d) continue;
+        d=d.replace(/^[①-⑳]\s*/,'').trim();
+        if(d.length > 120) d=d.slice(0,120).trim();
+        const pieces = splitInlineOptions(d);
+        if(pieces.length > 1){
+            pieces.forEach(p=>{
+                if(p){
+                    opts.push({label:p,value:String(opts.length+1),life:/[（(]生[）)]/.test(p)});
+                }
+            });
+            continue;
+        }
+        opts.push({label:d,value:String(opts.length+1),life:/[（(]生[）)]/.test(d)});
+    }
+    if(isCrisis){
+        // 5 options for death crisis, only 1 life gate
+        const crisisOpts=opts.slice(0,5);
+        deathCrisisOptions=crisisOpts;
+        return{options:crisisOpts};
+    }
+    if(opts.length === 0 && text.trim()){
+        const fallbackText=text.replace(/^[【\[][^】\]]+[】\]]\s*/,'').trim();
+        const inline=splitInlineOptions(fallbackText);
+        if(inline.length > 1){
+            opts = inline.map((d,i)=>({label:d,value:String(i+1)}));
+        }
+    }
+    if(opts.length === 1){
+        const merged = splitInlineOptions(opts[0].label);
+        if(merged.length > 1){
+            opts = merged.map((d,i)=>({label:d,value:String(i+1)}));
+        }
+    }
+    return{options:opts};
+}
+function rip(e,el){
+    const r=el.getBoundingClientRect();
+    const s=Math.max(r.width,r.height);
+    const x=(e.clientX||r.left+r.width/2)-r.left-s/2;
+    const y=(e.clientY||r.top+r.height/2)-r.top-s/2;
+    const p=document.createElement('span');
+    p.className='ripple';
+    p.style.width=p.style.height=s+'px';
+    p.style.left=x+'px';
+    p.style.top=y+'px';
+    el.appendChild(p);
+    setTimeout(()=>p.remove(),500);
+}
+
+function showPopup(preview){
+    const safePreview = stripOptionLinesFromText(preview);
+    // Build segmented preview
+    if(safePreview){
+        const segs=safePreview.split(/(?<=[。！？\n])/).filter(s=>s.trim());
+        let html='';
+        segs.forEach((s,i)=>{
+            if(i>=6)return;
+            const txt=s.trim();
+            if(txt)html+='<div class="seg-block"><span class="seg-text">'+txt.replace(/\n/g,'<br>')+'</span></div>';
+        });
+        popPrev.innerHTML=html||'<em>继续剧情</em>';
+    } else {
+        popPrev.innerHTML='<em>继续剧情</em>';
+    }
+    phQuest.style.display='none';
+    if(deathCrisis){
+        phAction.textContent='⚡ 生死危机';
+        phAction.className='phase-tab active';
+        const crisisOpts=deathCrisisOptions.length>0?deathCrisisOptions:lastOptions;
+        renderOpts(crisisOpts);
+    }
+    else if(gamePhase==='setup'){phAction.textContent='穿越准备';phAction.className='phase-tab active';renderOpts(lastOptions);}
+    else{phAction.textContent='剧情选项';phAction.className='phase-tab active';lastMainOptions=lastOptions.slice();renderOpts(lastOptions);}
+    optModal.classList.add('active');
+}
+function closePopup(){optModal.classList.remove('active');deathCrisis=false;}
+function refreshLeadDarkIndicator(){
+    if(!leadDarkIndicator) return;
+    if(maleLeadKey && npcData[maleLeadKey]){
+        const value = npcData[maleLeadKey].dark ?? 0;
+        const name = npcData[maleLeadKey].name || '???';
+        leadDarkIndicator.innerHTML = '<span class="name">'+name+'</span><span class="sep"> — </span>黑化值 <span class="value">'+value+'</span>';
+        leadDarkIndicator.classList.add('visible');
+    } else {
+        leadDarkIndicator.classList.remove('visible');
+    }
+}
+closePop.onclick=closePopup;
+optModal.onclick=(e)=>{if(e.target===optModal)closePopup();};
+
+function renderOpts(opts){
+    popOpts.innerHTML='';
+    if(!opts||opts.length===0) return;
+    opts.forEach(o=>{
+        const b=document.createElement('button');b.className='option-btn';
+        const display=o.label.replace(/[（(]生[）)]|[（(]死[）)]/g,'').trim();
+        b.textContent=display;
+        if(deathCrisis){
+            if(o.life){b.classList.add('life');b.textContent=display+' 🌱';}
+            else{b.classList.add('death');}
+        }
+        b.onclick=e=>{
+            if(isWaiting)return;
+            rip(e,b);closePopup();
+            // Danger option immediate warning
+            if(!deathCrisis&&gamePhase==='playing'&&maleLeadKey&&npcData[maleLeadKey]){
+                var dangerKW=/(?:攻击|杀|打|威胁|嘲讽|伤害|背叛|拒绝|质问|揭穿|举报|陷害|冷落|推开|激怒|挑衅|刺激|报复|折磨|欺骗|抛弃)/;
+                if(dangerKW.test(o.label)){
+                    var dv=npcData[maleLeadKey].dark||0;
+                    var warnMsg='⚠️ 危险选项！男主当前黑化值：'+dv+'/100';
+                    if(dv>=70)warnMsg+=' | ⚠️ 黑化值过高，可能触发生死危机（一次黑化+10即死）';
+                    showHint(warnMsg,4000);
+                }
+            }
+            if(gamePhase==='setup')handleSetupChoice(o.value);
+            else sendAI(o.label);
+        };
+        popOpts.appendChild(b);
+    });
+}
+
+// ===== API =====
+async function callAI(msgs,signal){
+    const k=keyIn.value.trim();if(!k)throw new Error('no key');
+    const m=modelSel.value,t=parseFloat(tempS.value),mt=parseInt(maxT.value)||800;
+    const tp=parseFloat(topP.value)||.9,pp=parseFloat(presP.value)||0,pl=platS.value;
+    let ep;
+    if(pl==='siliconflow')ep='https://api.siliconflow.cn/v1/chat/completions';
+    else if(pl==='openai')ep='https://api.openai.com/v1/chat/completions';
+    else if(pl==='deepseek')ep='https://api.deepseek.com/v1/chat/completions';
+    else if(pl==='moonshot')ep='https://api.moonshot.cn/v1/chat/completions';
+    else if(pl==='anthropic')ep='https://api.anthropic.com/v1/messages';
+    else if(pl==='google')ep='https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    else ep='https://api-inference.modelscope.cn/v1/chat/completions';
+    const pr=corsP.value;let url=ep;if(pr!=='none')url=pr+ep;
+    const r=await fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:JSON.stringify({model:m,messages:msgs,temperature:t,max_tokens:mt,top_p:tp,presence_penalty:pp,stream:false}),signal:signal||null});
+    if(!r.ok){const e=await r.text();throw new Error('API '+r.status);}
+    return (await r.json()).choices[0].message.content;
+}
+
+async function generatePlotlinesForWorld(world){
+    showLoad('生成剧情线...');
+    try{
+        const sp='你是一个创意丰富的故事策划师。为「'+world+'」世界生成25种不同的剧情组合和故事线标题，每个标题不超过20字，风格可以涵盖复仇、救赎、权谋、虐恋、甜宠、悬疑等多种方向。直接列出25个标题，每行一个，不要序号，不要额外文字。';
+        const r=await callAI([{role:'user',content:sp}]);
+        hideLoad();
+        const lines=r.split('\n').map(l=>l.trim()).filter(l=>l.length>2);
+        const pool=lines.length>=5?lines:['默认剧情线 - 复仇','默认剧情线 - 救赎','默认剧情线 - 权谋','默认剧情线 - 虐恋','默认剧情线 - 悬疑'];
+        const picked=pool[Math.floor(Math.random()*pool.length)];
+        selectedPlotline=picked;
+        return picked;
+    }catch(e){
+        hideLoad();
+        selectedPlotline='默认剧情线';
+        return '默认剧情线';
+    }
+}
+
+async function sendAI(inp){
+    if(isWaiting)return;isWaiting=true;isPaused=false;showLoad('推演剧情...');
+    conversationHistory.push({role:'user',content:inp});
+    aiAbortController=new AbortController();
+    pauseBtn.style.display='block';
+    try{
+        const raw=await callAI(conversationHistory,aiAbortController.signal);
+        aiAbortController=null;pauseBtn.style.display='none';
+        conversationHistory.push({role:'assistant',content:raw});dialogCount++;
+        hideLoad();
+        const clean=stripEmoji(raw);
+        conversationHistory[conversationHistory.length-1].content=clean;
+        // update thinking box
+        updateThinkingBox(raw);
+        advanceTime();
+        const split=splitAIResponse(clean);
+        const savedCrisis=deathCrisis;
+        let sStory=split.story, sOpts=split.options;
+        const re=splitAIResponse(sStory);
+        if(re.options.trim()){sStory=re.story;if(!sOpts.trim())sOpts=re.options;}
+        if(!sOpts.trim()){
+            const extracted=extractOptionLinesFromText(sStory);
+            if(extracted){
+                sOpts=extracted;
+            }
+        }
+        deathCrisis=savedCrisis;
+        sStory=stripOptionLinesFromText(sStory);
+        await addStoryStream(sStory,'assistant');
+        updateAttrsFromText(clean);
+        const p=parseOpts(sOpts);
+        lastOptions=p.options||[];
+        const preview=stripOptionLinesFromText(sStory);
+        lastPreviewText=preview||sStory;
+        // award积分 on every 2nd dialog
+        if(dialogCount%2===0){playerScore+=5;updateScoreDisplay();}
+        showPopup(preview);
+    }catch(e){
+        hideLoad();pauseBtn.style.display='none';
+        if(e.name==='AbortError'){
+            isPaused=true;resumeBtn.style.display='';
+            addStoryStream('⏸ 推演已暂停，点击「继续推演」恢复','assistant');
+        } else {
+            await addStoryStream('链接失败','assistant');
+            lastOptions=[{label:'重试',value:'1'},{label:'回主菜单',value:'2'}];
+            showPopup('连接出问题了');
+        }
+    }finally{
+        if(aiAbortController){aiAbortController=null;pauseBtn.style.display='none';}
+        isWaiting=false;
+    }
+}
+function pauseAI(){
+    if(aiAbortController&&!isPaused){
+        aiAbortController.abort();
+        pauseBtn.style.display='none';
+        resumeBtn.style.display='';
+        showHint('已暂停',1000);
+    }
+}
+function resumeAI(){
+    if(!isPaused)return;
+    isPaused=false;resumeBtn.style.display='none';
+    isWaiting=false;
+    // re-trigger AI with last conversation (don't re-push user msg)
+    (async function(){
+        isWaiting=true;isPaused=false;showLoad('继续推演...');
+        aiAbortController=new AbortController();pauseBtn.style.display='block';
+        try{
+            const raw=await callAI(conversationHistory,aiAbortController.signal);
+            aiAbortController=null;pauseBtn.style.display='none';
+            conversationHistory.push({role:'assistant',content:raw});dialogCount++;
+            hideLoad();
+            const clean=stripEmoji(raw);
+            conversationHistory[conversationHistory.length-1].content=clean;
+            updateThinkingBox(raw);advanceTime();
+            const split=splitAIResponse(clean);const savedCrisis=deathCrisis;
+            let sStory=split.story,sOpts=split.options;
+            const re=splitAIResponse(sStory);
+            if(re.options.trim()){sStory=re.story;if(!sOpts.trim())sOpts=re.options;}
+            if(!sOpts.trim()){const extracted=extractOptionLinesFromText(sStory);if(extracted)sOpts=extracted;}
+            deathCrisis=savedCrisis;sStory=stripOptionLinesFromText(sStory);
+            await addStoryStream(sStory,'assistant');updateAttrsFromText(clean);
+            const p=parseOpts(sOpts);lastOptions=p.options||[];
+            const preview=stripOptionLinesFromText(sStory);lastPreviewText=preview||sStory;
+            if(dialogCount%2===0){playerScore+=5;updateScoreDisplay();}
+            showPopup(preview);
+        }catch(e2){
+            hideLoad();pauseBtn.style.display='none';
+            if(e2.name==='AbortError'){isPaused=true;resumeBtn.style.display='';addStoryStream('⏸ 再次暂停','assistant');}
+            else{await addStoryStream('链接失败','assistant');lastOptions=[{label:'重试',value:'1'},{label:'回主菜单',value:'2'}];showPopup('连接出问题了');}
+        }finally{if(aiAbortController){aiAbortController=null;pauseBtn.style.display='none';}isWaiting=false;}
+    })();
+}
+
+// ===== NPC =====
+function initNpcData(){
+    npcData={};
+    currentNpcName='';
+}
+function buildNpcP(filter){
+    npcP.innerHTML='';let first='';
+    var q=(filter||'').toLowerCase();
+    Object.keys(npcData).forEach(k=>{
+        const d=npcData[k];if(q&&!d.name.toLowerCase().includes(q))return;
+        const b=document.createElement('button');b.className='npc-btn';
+        if(d.unlocked){
+            b.textContent=d.name;if(d.name===currentNpcName)b.classList.add('active');
+            if(!first)first=k;b.onclick=function(){swNpc(k);};
+        } else {b.textContent=d.name+' (锁)';b.classList.add('locked');}
+        npcP.appendChild(b);
+    });
+    if(!currentNpcName&&first)swNpc(first);
+    const hasUnlocked=Object.values(npcData).some(d=>d.unlocked);
+    npcQuickBtn.classList.toggle('visible',hasUnlocked);
+}
+function swNpc(key){
+    if(currentNpcName){
+        const ck=Object.keys(npcData).find(k=>npcData[k].name===currentNpcName);
+        if(ck){const msgs=[];chatD.querySelectorAll('.chat-bubble').forEach(b=>msgs.push({role:b.classList.contains('npc')?'npc':'user',html:b.innerHTML}));npcData[ck].chatMessages=msgs;}
+    }
+    const d=npcData[key];if(!d||!d.unlocked)return;
+    currentNpcName=d.name;
+    npcP.querySelectorAll('.npc-btn').forEach(b=>b.classList.toggle('active',b.textContent===d.name));
+    $('npcDialogName').textContent='与 '+d.name+' 对话';
+    chatD.innerHTML='';
+    if(d.chatMessages&&d.chatMessages.length>0)d.chatMessages.forEach(m=>{const e=document.createElement('div');e.className='chat-bubble '+m.role;e.innerHTML=m.html;chatD.appendChild(e);});
+    npcS.innerHTML='<span class="npc-name">'+d.name+'</span> '+d.desc;
+    npcA.textContent=d.affinity;npcA.className='value '+(d.affinity>=0?'good':'bad');
+    if(d.isMaleLead||key===maleLeadKey){npcD.textContent=d.dark;npcD.style.display='';affB.querySelector('.affinity-item:last-child').style.display='';}
+    else{npcD.textContent='--';npcD.style.display='none';affB.querySelector('.affinity-item:last-child').style.display='none';}
+}
+function randNpc(){
+    var sn=['苏','沈','顾','陆','林','白','江','萧','叶','楚','柳','温','秦','许','宋','裴','霍','傅','谢','程','周','赵','孙','韩','唐'];
+    var gn=['子轩','明远','天翊','景行','宸宇','沐白','洛尘','江寒','云瑾','清瑶','映雪','听雨','知秋','书瑶','若曦','婉清','明薇','芷柔','念慈','绾心'];
+    var roles=['旅人','商人','剑客','书生','道士','药师','铁匠','裁缝','琴师','画师','猎户','渔夫','厨子','乞丐','乞丐','郎中','镖师','戏子','僧侣','隐士'];
+    var name=sn[Math.floor(Math.random()*sn.length)]+gn[Math.floor(Math.random()*gn.length)];
+    var role=roles[Math.floor(Math.random()*roles.length)];
+    var descs=['沉默寡言的'+role,'热情开朗的'+role,'神秘莫测的'+role,'见多识广的'+role,'性格古怪的'+role];
+    var key='n_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    var desc=descs[Math.floor(Math.random()*descs.length)];
+    npcData[key]={name:name,unlocked:true,history:[],chatMessages:[],affinity:0,dark:0,desc:desc,isMaleLead:false};
+    currentNpcName=name;
+    buildNpcP($('npcSearch').value);
+    swNpc(key);
+    showHint('新NPC: '+name+' ('+desc+')',1500);
+}
+function startNPC(){
+    if(npcModeActive)return;
+    npcModeActive=true;
+    // ensure at least one NPC exists
+    if(Object.keys(npcData).length===0){
+        var key='n_guide_'+Date.now();
+        npcData[key]={name:'引路者',unlocked:true,history:[],chatMessages:[],affinity:0,dark:0,desc:'冷静理智的引路者',isMaleLead:false};
+    }
+    buildNpcP($('npcSearch').value);
+    npcM.classList.add('active');
+    // reset inline styles for consistent positioning
+    if(window.innerWidth<=768){npcM.style.left='';npcM.style.right='';npcM.style.top='';npcM.style.bottom='';}
+    else{
+        var savedPos=localStorage.getItem('npc_panel_pos');
+        if(savedPos){
+            try{var p=JSON.parse(savedPos);npcM.style.left=p.left;npcM.style.right=p.right;npcM.style.top=p.top;npcM.style.bottom=p.bottom;}catch(e){}
+        }
+    }
+}
+// NPC drag
+(function(){
+    var isDrag=false,offX=0,offY=0,startX=0,startY=0;
+    npcM.addEventListener('mousedown',function(e){
+        var h=document.querySelector('.chat-header');if(!h||!h.contains(e.target)||e.target.closest('.close-btn'))return;
+        isDrag=true;var r=npcM.getBoundingClientRect();
+        offX=e.clientX-r.left;offY=e.clientY-r.top;
+        npcM.classList.add('dragging');
+        startX=r.left;startY=r.top;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove',function(e){
+        if(!isDrag)return;
+        npcM.style.left=e.clientX-offX+'px';npcM.style.top=e.clientY-offY+'px';
+        npcM.style.right='auto';npcM.style.bottom='auto';
+    });
+    document.addEventListener('mouseup',function(){
+        if(!isDrag)return;
+        isDrag=false;npcM.classList.remove('dragging');
+        localStorage.setItem('npc_panel_pos',JSON.stringify({left:npcM.style.left,top:npcM.style.top,right:npcM.style.right,bottom:npcM.style.bottom}));
+    });
+})();
+// NPC search
+$('npcSearch').addEventListener('input',function(){buildNpcP(this.value);});
+// NPC random button
+$('npcRandomBtn').onclick=randNpc;
+function addChat(s,role){
+    const b=document.createElement('div');b.className='chat-bubble '+role;
+    b.innerHTML=s.replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>')+'<div class="chat-time">'+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div>';
+    chatD.appendChild(b);chatD.scrollTop=chatD.scrollHeight;
+    if(role==='npc'){
+        const m=s.match(/[（\(](.+?)[）\)]/);npcS.innerHTML='<span class="npc-name">'+currentNpcName+'</span> '+(m?m[1]:'静静看着你');
+        const af=Math.floor(Math.random()*3)-1,dk=Math.floor(Math.random()*2);
+        const ck=Object.keys(npcData).find(k=>npcData[k].name===currentNpcName);
+        if(ck){npcData[ck].affinity+=af;npcData[ck].dark+=dk;npcA.textContent=npcData[ck].affinity;npcD.textContent=npcData[ck].dark;if(ck===maleLeadKey)refreshLeadDarkIndicator();}
+        npcA.className='value '+(npcA.textContent>=0?'good':'bad');
+    }
+}
+async function sendNpc(){
+    const msg=chatI.value.trim();if(!msg)return;
+    addChat(msg,'user');chatI.value='';
+    const ck=Object.keys(npcData).find(k=>npcData[k].name===currentNpcName);if(!ck)return;
+    if(!npcData[ck].history||npcData[ck].history.length===0){
+        let extra='';
+        if(currentNpcName==='引路者')extra='，你是这个'+(selectedWorld||'当前')+'世界的引路者，你的外貌、性格、说话风格和背景完全由这个世界观决定。用沉稳语气给出指引和建议，';
+        else if(npcData[ck].isMaleLead)extra='，你是重生男主，对主控有强烈的杀意和仇恨，外表温顺但内心充满暴戾和毁灭欲，一有机会就想置主控于死地，语气中偶尔透露出阴冷和疯狂，';
+        npcData[ck].history=[{role:'system',content:'你是'+currentNpcName+extra+'第一人称回复，用括号标注动作和表情。注意：括号内只能标注动作/表情/语气，不能写心理活动。'}];
+    }
+    npcData[ck].history.push({role:'user',content:msg});
+    try{const r=stripEmoji(await callAI(npcData[ck].history));npcData[ck].history.push({role:'assistant',content:r});addChat(r,'npc');updateThinkingBox(r);
+    if(maleLeadKey&&npcData[maleLeadKey]){var dm=r.match(/(?:黑化值|黑化)\s*[+:=]\s*(\d+)/i);if(dm)npcData[maleLeadKey].dark=parseInt(dm[1]);refreshLeadDarkIndicator();}
+    }catch(e){addChat('[系统] 链接失败','npc');}
+}
+function closeNpc(){
+    if(currentNpcName){const ck=Object.keys(npcData).find(k=>npcData[k].name===currentNpcName);if(ck){const msgs=[];chatD.querySelectorAll('.chat-bubble').forEach(b=>msgs.push({role:b.classList.contains('npc')?'npc':'user',html:b.innerHTML}));npcData[ck].chatMessages=msgs;}}
+    npcM.classList.remove('active');npcModeActive=false;
+    if(lastOptions.length>0&&gamePhase==='playing')continueBtn.classList.add('visible');
+}
+sendB.onclick=sendNpc;closeM.onclick=closeNpc;
+chatI.addEventListener('keypress',e=>{if(e.key==='Enter')sendNpc();});
+
+// ===== BOTTOM BAR =====
+continueBtn.onclick=()=>{
+    if(optModal.classList.contains('active')){closePopup();return;}
+    if(lastOptions.length>0){if(deathCrisis)showPopup('⚡ 生死危机');else showPopup(lastPreviewText||'继续剧情');}
+};
+npcQuickBtn.onclick=startNPC;
+
+function updateContinueButton(){
+    const visible = gamePhase==='playing';
+    continueBtn.classList.toggle('visible', visible);
+    const hasUnlocked=Object.values(npcData).some(d=>d.unlocked);
+    npcQuickBtn.classList.toggle('visible', hasUnlocked && visible);
+}
+
+// ===== THEME TOGGLE =====
+let dark=false;
+themeBtn.onclick=()=>{dark=!dark;if(dark){document.documentElement.style.setProperty('--bg-main','linear-gradient(145deg,#1a2a3a,#0f1a24)');document.documentElement.style.setProperty('--text-primary','#eef4ff');document.documentElement.style.setProperty('--text-soft','#a0b4c4');document.documentElement.style.setProperty('--bg-glass','rgba(30,45,60,0.55)');document.documentElement.style.setProperty('--glass-border','rgba(255,255,255,0.06)');document.documentElement.style.setProperty('--sidebar-bg','rgba(25,40,55,0.8)');document.documentElement.style.setProperty('--story-bg','rgba(40,55,70,0.35)');}else{document.documentElement.style.setProperty('--bg-main','linear-gradient(145deg,#f0f7f3,#dce8e0)');document.documentElement.style.setProperty('--text-primary','#1e2f3e');document.documentElement.style.setProperty('--text-soft','#5a6f7e');document.documentElement.style.setProperty('--bg-glass','rgba(255,255,255,0.4)');document.documentElement.style.setProperty('--glass-border','rgba(255,255,255,0.25)');document.documentElement.style.setProperty('--sidebar-bg','rgba(255,255,255,0.65)');document.documentElement.style.setProperty('--story-bg','rgba(255,245,235,0.4)');}themeBtn.classList.toggle('active',dark);showHint('深色模式 · '+(dark?'已开启':'已关闭'));localStorage.setItem('ui_dark',dark);};
+const savedDark=localStorage.getItem('ui_dark');if(savedDark==='true'){dark=true;document.documentElement.style.setProperty('--bg-main','linear-gradient(145deg,#1a2a3a,#0f1a24)');document.documentElement.style.setProperty('--text-primary','#eef4ff');document.documentElement.style.setProperty('--text-soft','#a0b4c4');document.documentElement.style.setProperty('--bg-glass','rgba(30,45,60,0.55)');document.documentElement.style.setProperty('--glass-border','rgba(255,255,255,0.06)');document.documentElement.style.setProperty('--sidebar-bg','rgba(25,40,55,0.8)');document.documentElement.style.setProperty('--story-bg','rgba(40,55,70,0.35)');themeBtn.classList.add('active');}
+
+// ===== SETUP FLOW =====
+function showSetupStart(){
+    gamePhase='setup';setupStep=0;storyArea.innerHTML='<div class="message assistant"><div class="story-text"><em>灵境开启...</em></div></div>';
+    popPrev.innerHTML='<em>是否开启穿越？主人</em>';
+    phQuest.style.display='none';phAction.textContent='抉择';phAction.className='phase-tab active';
+    lastOptions=[{label:'是，开启穿越',value:'1'},{label:'否，再考虑',value:'2'}];
+    renderOpts(lastOptions);optModal.classList.add('active');
+}
+function showWorldSelect(){
+    setupStep=1;
+    popPrev.innerHTML='<em>选择你要穿越的世界：</em>';phAction.textContent='选择世界';
+    lastOptions=[
+        {label:'古代架空',value:'古代架空'},{label:'武侠',value:'武侠'},
+        {label:'修仙',value:'修仙'},{label:'都市异能',value:'都市异能'},
+        {label:'灵异',value:'灵异'},{label:'末日',value:'末日'},
+        {label:'奇幻',value:'奇幻'},{label:'科幻',value:'科幻'},
+        {label:'悬疑',value:'悬疑'},{label:'恐怖',value:'恐怖'},
+        {label:'历史',value:'历史'},{label:'仙侠',value:'仙侠'},
+        {label:'玄幻',value:'玄幻'},{label:'海盗',value:'海盗'},
+        {label:'东方神话',value:'东方神话'},{label:'西方魔幻',value:'西方魔幻'},
+        {label:'西部',value:'西部'},{label:'宫斗',value:'宫斗'},
+        {label:'基因改造',value:'基因改造'},{label:'穿越时空',value:'穿越时空'},
+        {label:'马戏团',value:'马戏团'},{label:'学院',value:'学院'},
+        {label:'吸血鬼',value:'吸血鬼'},{label:'赛博朋克',value:'赛博朋克'},{label:'随机',value:'随机'}
+    ];
+    renderOpts(lastOptions);optModal.classList.add('active');
+}
+function showGenderSelect(){
+    setupStep=2;
+    popPrev.innerHTML='<em>选择你的性别：</em>';phAction.textContent='选择性别';
+    lastOptions=[{label:'♀ 女',value:'女'},{label:'♂ 男',value:'男'}];
+    renderOpts(lastOptions);optModal.classList.add('active');
+}
+async function generateAndShowIdentity(){
+    setupStep=3;
+    showLoad('联网生成角色名...');
+    try{
+        var nameResp=await callAI([{role:'user',content:'你是一个中文角色名生成器。根据世界观「'+selectedWorld+'」和性别「'+selectedGender+'」，生成1个符合该背景的中文角色名（姓+名，2-3个字）。只输出名字本身，不要任何其他文字。'}]);
+        nameResp=nameResp.replace(/[\s\n\r"']/g,'').trim();
+        if(nameResp.length>=2&&nameResp.length<=6)playerName=nameResp;
+        else throw new Error('invalid');
+    }catch(e){
+        var fallbackSns=['苏','沈','顾','陆','林'];
+        var fallbackGns=selectedGender==='男'?['子轩','明远','天翊','景行','宸宇']:['清瑶','映雪','听雨','知秋','书瑶'];
+        playerName=fallbackSns[Math.floor(Math.random()*fallbackSns.length)]+fallbackGns[Math.floor(Math.random()*fallbackGns.length)];
+    }
+    hideLoad();
+    const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+    const attrs={charm:ri(40,80),intel:ri(40,80),strength:ri(40,80),luck:ri(40,80)};
+    playerAttrs={...attrs,affinity:0,dark:0};
+    $('attr_charm').textContent=attrs.charm;$('attr_intel').textContent=attrs.intel;
+    $('attr_strength').textContent=attrs.strength;$('attr_luck').textContent=attrs.luck;
+    $('attr_affinity').textContent='--';$('attr_dark').textContent='--';
+    // guide adapts to world
+    const guideNames={
+        '古代架空':'神秘老者','武侠':'江湖百晓生','修仙':'灵虚真人','都市异能':'白鸦','灵异':'引魂人','末日':'幸存者指挥官','奇幻':'星空智者','科幻':'全息向导','随机':'引路者','悬疑':'侦探','恐怖':'守夜人','历史':'老学究','仙侠':'白发真人','玄幻':'武痴','海盗':'老船长','东方神话':'白须仙人','西方魔幻':'白袍法师','西部':'赏金猎人','宫斗':'太监总管','基因改造':'基因工程师','穿越时空':'时空旅人','马戏团':'小丑','学院':'教导主任','吸血鬼':'贵族','赛博朋克':'黑客'
+    };
+    const guideDesc={
+        '古代架空':'鹤发童颜，一袭青衫，仿佛知晓这王朝更替中的所有秘密',
+        '武侠':'腰间挂一壶浊酒，眼中有看尽江湖沧桑的淡然',
+        '修仙':'白衣胜雪，周身萦绕着若有若无的灵光，一看便知是得道高人',
+        '都市异能':'黑风衣，银发，手里总是转着一枚硬币，似乎知道这座城市的所有秘密',
+        '灵异':'一袭黑袍，半边脸藏在兜帽下，声音沙哑而沉稳',
+        '末日':'满身风尘，眼神坚毅，背后那把长刀已经饮过无数鲜血',
+        '奇幻':'身高两尺的光球精灵，声音清脆如铃，自称是时空的守护者',
+        '科幻':'全息投影构成的虚拟形象，面容会随情绪变化颜色',
+        '悬疑':'戴着猎鹿帽的侦探，手里握着一本泛黄的笔记本',
+        '恐怖':'脸色苍白的守夜人，手电筒的光忽明忽暗',
+        '历史':'青衣方巾的老学究，眼神睿智而深沉',
+        '仙侠':'御剑而行的白发真人，周身仙气缭绕',
+        '玄幻':'背负重剑的武痴，目光如炬打量着你',
+        '海盗':'独眼独腿的老船长，木酒杯里永远装着朗姆酒',
+        '东方神话':'手持拂尘的白须仙人，脚下踏着祥云',
+        '西方魔幻':'白袍法师，法杖顶端的水晶球闪烁着幽蓝光芒',
+        '西部':'头戴宽檐帽的赏金猎人，腰间别着左轮手枪',
+        '宫斗':'手持拂尘的太监总管，脸上挂着意味深长的笑',
+        '基因改造':'穿着防护罩的基因工程师，胸口的徽章闪着蓝光',
+        '穿越时空':'身着奇异服装的时空旅人，手腕上的装置不停闪烁',
+        '马戏团':'画着浓妆的小丑，笑容灿烂却让人莫名发冷',
+        '学院':'戴着金丝眼镜的教导主任，手里抱着一摞档案',
+        '吸血鬼':'身着黑色礼服的优雅贵族，苍白的唇边露出一抹意味深长的笑',
+        '赛博朋克':'戴着霓虹护目镜的黑客，机械义肢在黑暗中泛着冷光',
+        '随机':'模糊不清的身影，声音却异常清晰'
+    };
+    const w=selectedWorld||'随机';
+    if(npcData.guide){
+        npcData.guide.name=guideNames[w]||'引路者';
+        npcData.guide.desc=guideDesc[w]||'冷静理智的引路者，熟悉这个世界的规则';
+        npcData.guide.history=[];
+        npcData.guide.chatMessages=[];
+    }
+    // Add world-specific connections as NPCs
+    const connections={
+        '古代架空':[
+            {name:'茶馆老板娘',desc:'风韵犹存，消息灵通，对谁都笑盈盈的',affinity:0},
+            {name:'衙门捕头',desc:'一脸正气，腰配长刀，看似不好接近',affinity:-5},
+            {name:'当铺掌柜',desc:'精明的中年男人，一双眼睛似乎能看穿一切',affinity:0}
+        ],
+        '武侠':[
+            {name:'酒楼老板娘',desc:'江湖人称"赛西施"，手里永远攥着条手帕',affinity:5},
+            {name:'铁匠老陈',desc:'沉默寡言，但锻造的兵器天下闻名',affinity:0},
+            {name:'丐帮小乞儿',desc:'十四五岁的少年，眼睛滴溜溜地转，机灵得很',affinity:10}
+        ],
+        '修仙':[
+            {name:'灵药长老',desc:'须发皆白，身上总带着一股药草香',affinity:0},
+            {name:'剑阁师兄',desc:'不苟言笑，剑眉星目，是这一代最杰出的弟子',affinity:-5},
+            {name:'藏经阁扫地人',desc:'看不出修为深浅，总是低头默默扫地',affinity:10}
+        ],
+        '都市异能':[
+            {name:'咖啡店老板',desc:'留着长发的文艺青年，似乎对超自然现象见怪不怪',affinity:5},
+            {name:'神秘学书店主',desc:'戴着圆框眼镜，店里有股陈旧的纸墨味',affinity:0},
+            {name:'隔壁邻居',desc:'看起来很普通的上班族，但总在深夜出门',affinity:0}
+        ],
+        '灵异':[
+            {name:'老村长',desc:'拄着拐杖，浑浊的眼里藏着许多秘密',affinity:0},
+            {name:'阴阳师',desc:'一袭白衣，手持罗盘，面色凝重',affinity:-5},
+            {name:'杂货铺婆婆',desc:'卖些奇怪的物件，每样东西似乎都有来历',affinity:10}
+        ],
+        '末日':[
+            {name:'幸存者老张',desc:'四十多岁，以前是军人，基地里的主心骨',affinity:5},
+            {name:'医疗兵小杨',desc:'二十出头的姑娘，眼神坚毅，是基地唯一的医生',affinity:10},
+            {name:'物资贩子',desc:'精瘦的男人，永远在盘算着交易',affinity:-10}
+        ],
+        '奇幻':[
+            {name:'酒馆老板娘',desc:'精灵族，耳朵尖尖的，笑容明媚',affinity:5},
+            {name:'佣兵团长',desc:'兽人族，浑身伤疤，但意外地重情义',affinity:0},
+            {name:'魔法学院学徒',desc:'人类少年，正在为明天的考试发愁',affinity:10}
+        ],
+        '科幻':[
+            {name:'星港调度员',desc:'穿着制服，胸前挂着身份识别卡，态度公事公办',affinity:0},
+            {name:'机械师艾拉',desc:'赛博格改造人，左臂是机械，说话直来直去',affinity:5},
+            {name:'黑市商人',desc:'兜售各种违禁芯片，眼神狡黠',affinity:-5}
+        ],
+        '悬疑':[
+            {name:'报社主编',desc:'烟斗不离手的老记者，知道很多秘密',affinity:0},
+            {name:'法医小姐',desc:'冷静干练，解剖刀在她手里像手术刀一样精准',affinity:5},
+            {name:'警长',desc:'急性子的警官，总是叼着一根没点燃的雪茄',affinity:-5}
+        ],
+        '恐怖':[
+            {name:'旅店老板娘',desc:'面色苍白，总说这栋房子晚上不太平',affinity:0},
+            {name:'神父',desc:'手握十字架，眼神中透着不安',affinity:10},
+            {name:'失踪者的妹妹',desc:'红着眼眶，手里攥着一张泛黄的照片',affinity:5}
+        ],
+        '历史':[
+            {name:'茶馆说书人',desc:'醒木一拍，口若悬河',affinity:5},
+            {name:'守城老兵',desc:'脸上有一道刀疤，眼神沧桑',affinity:0},
+            {name:'青楼花魁',desc:'才情出众，消息灵通',affinity:-5}
+        ],
+        '仙侠':[
+            {name:'灵兽峰师姐',desc:'擅驭灵兽，性情温和',affinity:10},
+            {name:'魔道卧底',desc:'行踪诡秘，身份成谜',affinity:-10},
+            {name:'铸剑长老',desc:'性格古怪，但铸剑技艺天下无双',affinity:0}
+        ],
+        '玄幻':[
+            {name:'佣兵团大姐头',desc:'豪爽直率，实力强悍',affinity:5},
+            {name:'药堂学徒',desc:'胆小怕事但心地善良',affinity:10},
+            {name:'神秘商人',desc:'游走于各大势力之间，只谈交易不谈感情',affinity:-5}
+        ],
+        '海盗':[
+            {name:'大副',desc:'忠心耿耿的老水手，脸上有一道可怖的刀疤',affinity:5},
+            {name:'海盗王的女儿',desc:'脾气火爆，枪法精准',affinity:0},
+            {name:'被俘的航海士',desc:'戴着铁链，但眼神中透着精明',affinity:10}
+        ],
+        '东方神话':[
+            {name:'土地公',desc:'矮小和蔼的老头，拄着龙头拐杖',affinity:10},
+            {name:'狐妖',desc:'美艳动人，眼波流转间摄人心魄',affinity:-5},
+            {name:'捉妖师',desc:'背负桃木剑，目光如炬',affinity:0}
+        ],
+        '西方魔幻':[
+            {name:'酒馆老板',desc:'矮人族，脾气暴躁但重信守诺',affinity:5},
+            {name:'精灵游侠',desc:'金发碧眼，弓箭从不离手',affinity:0},
+            {name:'流浪法师',desc:'法力强大但总在逃避什么',affinity:-5}
+        ],
+        '西部':[
+            {name:'酒馆舞女',desc:'笑容明媚，左轮手枪藏在吊带袜里',affinity:5},
+            {name:'警长',desc:'正义感爆棚，但这里的法律由子弹说了算',affinity:0},
+            {name:'赏金猎人',desc:'沉默寡言，只认钱不认人',affinity:-10}
+        ],
+        '宫斗':[
+            {name:'掌事姑姑',desc:'宫里的老人，知道每个角落的秘密',affinity:5},
+            {name:'御前侍卫',desc:'忠于职守，目不斜视',affinity:0},
+            {name:'小太监',desc:'机灵懂事，消息灵通',affinity:10}
+        ],
+        '基因改造':[
+            {name:'实验室助理',desc:'戴着厚瓶底眼镜，战战兢兢',affinity:10},
+            {name:'安保队长',desc:'经过基因强化的退役士兵，警惕性极高',affinity:-5},
+            {name:'地下医生',desc:'在违禁改造领域技术顶尖',affinity:0}
+        ],
+        '穿越时空':[
+            {name:'历史研究员',desc:'对各个时代的细节了如指掌',affinity:5},
+            {name:'时空管理局探员',desc:'怀疑你是偷渡者，正在对你进行调查',affinity:-10},
+            {name:'时代土著',desc:'对这个世界的一切感到好奇',affinity:10}
+        ],
+        '马戏团':[
+            {name:'驯兽师',desc:'话不多，但动物们都听他的话',affinity:5},
+            {name:'占卜师',desc:'水晶球里似乎真的藏着秘密',affinity:0},
+            {name:'杂技少年',desc:'身手矫健，笑容里带着不属于这个年纪的沧桑',affinity:10}
+        ],
+        '学院':[
+            {name:'图书馆管理员',desc:'永远在整理书架，似乎读过每一本书',affinity:5},
+            {name:'学生会主席',desc:'品学兼优，但眼神偶尔闪过阴霾',affinity:0},
+            {name:'神秘转校生',desc:'总是戴着耳机独来独往',affinity:-5}
+        ],
+        '吸血鬼':[
+            {name:'古堡管家',desc:'优雅从容，活了至少两百年',affinity:0},
+            {name:'血猎',desc:'银剑藏在风衣下，对吸血鬼深恶痛绝',affinity:-10},
+            {name:'人类仆从',desc:'自愿为吸血鬼服务的少女，眼神狂热',affinity:5}
+        ],
+        '赛博朋克':[
+            {name:'义体医生',desc:'生意很好，因为没人能拒绝更强的身体',affinity:5},
+            {name:'公司特工',desc:'面无表情，机械眼闪着红光',affinity:-10},
+            {name:'地下拳手',desc:'浑身都是改装痕迹，拳头就是他的语言',affinity:0}
+        ]
+    };
+    const conns=connections[w]||connections['古代架空'];
+    conns.forEach(function(c){
+        var key='wc_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+        npcData[key]={name:c.name,desc:c.desc,unlocked:true,affinity:c.affinity,history:[],chatMessages:[],dark:0,isMaleLead:false};
+    });
+    popPrev.innerHTML='<em>身份已生成</em><br>姓名：'+playerName+'<br>性别：'+selectedGender+'<br>世界：'+selectedWorld+'<br>引路者：'+(guideNames[w]||'引路者')+'<br>魅力:'+attrs.charm+' 智力:'+attrs.intel+' 武力:'+attrs.strength+' 幸运:'+attrs.luck;
+    lastOptions=[{label:'接受身份',value:'1'},{label:'重新随机',value:'2'}];
+    renderOpts(lastOptions);optModal.classList.add('active');
+}
+async function handleSetupChoice(value){
+    if(setupStep===0&&value==='1')showWorldSelect();
+    else if(setupStep===1){
+        selectedWorld=value;
+        // Generate 25 plotlines silently
+        await generatePlotlinesForWorld(value);
+        showGenderSelect();
+    }
+    else if(setupStep===2){selectedGender=value;await generateAndShowIdentity();}
+    else if(setupStep===3&&value==='2')await generateAndShowIdentity();
+    else if(setupStep===3)startGamePlay();
+}
+function startGamePlay(){
+    gamePhase='playing';
+    updateContinueButton();
+    addStoryStream('— 穿越启动 · '+(selectedWorld||'未知')+' — | 剧情线：'+selectedPlotline,'assistant');
+    const sp='你是一个女频文字游戏AI，创作高质量耽美向小说式剧情。\n\n全程使用第二人称「你」叙述，让玩家有沉浸感。不要用第一人称或第三人称。\n\n【核心——重生男主】每个世界的男主都是重生者，前世与主控毫无交集或主控对他不好。初始好感度极低(-50~0)，初始黑化值较高(15~40)。外表温良但眼神偶尔流露沧桑警惕。核心设定：男主对主控有强烈的杀意和仇恨，内心极度想杀死主控，他的温柔和顺都是伪装，一有机会就会暴起杀人。黑化值受压迫源+前世创伤叠加影响。好感度≥80且黑化值≤10时男主坦白重生记忆。\n\n【五小任务】1.生活/事业 2.感情培养 3.误会化解/真相探索 4.压迫源对抗 5.特殊偶遇\n\n【世界剧情线】本世界剧情线为：'+selectedPlotline+'。请围绕这条主线展开剧情。\n\n============= 结构说明 =============\n你的每次回复分两部分：\n【第一部分】纯文字剧情（展示在主屏幕），每句换行，对话用"引号"。\n【第二部分】你预测的玩家下一步行为选项（自动解析为按钮，弹出窗口供玩家点击选择）。\n两部分之间用一行"---"分隔。\n\n你的回复格式如下（不要额外添加说明文字）：\n剧情内容...\n...\n---\n上前扶住那个陌生人\n悄悄跟在他身后观察\n假装没看见继续赶路\n去茶馆打听这里的消息\n检查自己随身携带的物品\n找个借口离开这个是非之地\n\n注意：\n1. 分隔线"---"之后的内容会被自动解析为按钮，不会出现在主屏幕\n2. 输出6-8个预测行为，每个必须是紧扣上文的具体动作（如"上前扶住陌生人"），不要笼统\n3. 用户点击某个按钮后，会把该选项内容发给你作为对话输入\n4. 分隔线之前只写剧情，不要混入选项文字\n\n【生死危机】黑化值一次增加>10点时，分隔线改为"--- 生死危机 ---"，之后输出5个选项并用（生）（死）标注，**只有1个是（生），其余4个都是（死）**。\n\n【BE】黑化值≥100时输出BE结局，用"---"分隔后输出：1.开启新世界 2.返回主菜单\n\n【数值】每次标注黑化值/好感度变化。黑化值升高用⚠️。新NPC用【解锁NPC:角色名】，男主出现用【解锁男主:角色名】。\n\n当前主控：'+playerName+'，性别：'+selectedGender+'，世界：'+selectedWorld+'，剧情线：'+selectedPlotline+'。\n开始游戏：先写一段荒诞开局事件（让主控陷入尴尬，不涉及男主），再写男主黑化原因和前世的简要剧情，然后提示留意异常事件，最后用"---"分隔，写出6-8个紧扣上文的具体预测行为选项（必须6个以上）。';
+    conversationHistory=[{role:'system',content:sp}];
+    sendAI('开始游戏');
+}
+
+// ===== INIT =====
+function initGame(){
+    gameDay=1;gameTimeIdx=0;deathCrisis=false;lastOptions=[];lastMainOptions=[];dialogCount=0;
+    playerAttrs={charm:65,intel:72,strength:48,luck:55,affinity:0,dark:0};
+    $('attr_charm').textContent='65';$('attr_intel').textContent='72';
+    $('attr_strength').textContent='48';$('attr_luck').textContent='55';
+    $('attr_affinity').textContent='--';$('attr_dark').textContent='--';
+    continueBtn.classList.remove('visible');
+    npcQuickBtn.classList.remove('visible');
+    initNpcData();maleLeadKey='';
+    storyArea.innerHTML='';storyArea.classList.add('centered');document.getElementById('welcomeOverlay').classList.remove('hidden');
+    gamePhase='setup';setupStep=-1;
+    attrP.classList.add('hide');
+    refreshLeadDarkIndicator();
+    syncToggleBtns();
+}
+function beginSetup(){
+    if(!keyIn.value.trim()){addStoryStream('请先输入 API Key。','assistant');return;}
+    storyArea.innerHTML='';storyArea.classList.remove('centered');document.getElementById('welcomeOverlay').classList.add('hidden');conversationHistory=[];dialogCount=0;gamePhase='setup';setupStep=0;
+    initNpcData();maleLeadKey='';
+    showSetupStart();
+}
+
+// ===== BUTTONS =====
+saveBtn.onclick=()=>{if(!keyIn.value.trim())return;beginSetup();};
+testBtn.onclick=async()=>{testBtn.textContent='...';testBtn.disabled=true;try{const r=await callAI([{role:"user",content:"回复OK"}]);alert('成功: '+r.slice(0,50));}catch(e){alert('失败: '+e.message);}testBtn.textContent='测试';testBtn.disabled=false;};
+clrBtn.onclick=()=>{if(confirm('清空所有？')){storyArea.innerHTML='';conversationHistory=[];dialogCount=0;initGame();}};
+expW.onclick=()=>{let h='<html><meta charset="utf-8"><style>body{font-family:serif;padding:2em;line-height:1.6}.msg{margin-bottom:1em;padding:1em;border-left:4px solid #5ba3a0;background:#f8f5f0}em{color:#d4835a}table{width:100%;border-collapse:collapse;margin:1em 0;font-size:0.9em}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}th{background:#5ba3a0;color:white}</style><body><h1 style="text-align:center;color:#5ba3a0">灵境 · 游戏记录</h1><hr><h2>主控信息</h2><table><tr><th>姓名</th><td>'+playerName+'</td></tr><tr><th>性别</th><td>'+selectedGender+'</td></tr><tr><th>世界</th><td>'+selectedWorld+'</td></tr><tr><th>剧情线</th><td>'+(selectedPlotline||'--')+'</td></tr></table><h3>属性</h3><table><tr><th>魅力</th><td>'+playerAttrs.charm+'</td></tr><tr><th>智力</th><td>'+playerAttrs.intel+'</td></tr><tr><th>武力</th><td>'+playerAttrs.strength+'</td></tr><tr><th>幸运</th><td>'+playerAttrs.luck+'</td></tr></table><h2>人物关系</h2><table><tr><th>名称</th><th>描述</th><th>好感度</th><th>黑化值</th><th>状态</th></tr>';Object.keys(npcData).forEach(k=>{var d=npcData[k],s=d.unlocked?'已解锁':'未解锁',ml=d.isMaleLead?'★男主':'';h+='<tr><td>'+d.name+ml+'</td><td>'+(d.desc||'--')+'</td><td>'+(d.affinity!==undefined?d.affinity:'--')+'</td><td>'+(d.dark!==undefined?d.dark:'--')+'</td><td>'+s+'</td></tr>';});h+='</table><h2>剧情</h2><hr>';storyArea.querySelectorAll('.message').forEach(m=>{h+='<div class="msg">'+m.innerHTML+'</div>';});h+='</body></html>';const b=new Blob([h],{type:'application/msword'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='灵境_'+new Date().toISOString().slice(0,10)+'.doc';a.click();URL.revokeObjectURL(u);};
+expJ.onclick=()=>{var j={exportVersion:2,player:{name:playerName,gender:selectedGender,world:selectedWorld,plotline:selectedPlotline,attrs:playerAttrs},npcs:npcData,maleLeadKey:maleLeadKey,gameState:{day:gameDay,timeIdx:gameTimeIdx,dialogCount:dialogCount},conversation:conversationHistory};const b=new Blob([JSON.stringify(j,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='灵境_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);};
+impBtn.onclick=()=>fInp.click();
+fInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();const isDoc=f.name.endsWith('.doc');r.onload=ev=>{try{if(isDoc){const html=ev.target.result;storyArea.innerHTML='';addStoryStream('📄 Word 文档导入成功 (仅恢复剧情显示)','assistant');const body=html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);if(body){const msgs=body[1].match(/<div class="msg"[^>]*>([\s\S]*?)<\/div>/gi);if(msgs)msgs.forEach(function(m){const txt=m.replace(/<[^>]+>/g,'').trim();if(txt)addStoryStream(txt,'assistant');});const pTables=body[1].match(/<h2>主控信息<\/h2>[\s\S]*?<table>([\s\S]*?)<\/table>/i);if(pTables){const cells=pTables[1].match(/<td>([^<]*)<\/td>/gi);if(cells&&cells.length>2){var n=cells[1]?cells[1].replace(/<\/?td>/gi,''):'';if(n)playerName=n;}}addStoryStream('— 文档导入完成 —','assistant');}return;}const d=JSON.parse(ev.target.result);if(d.exportVersion){if(d.player){playerName=d.player.name;selectedGender=d.player.gender;selectedWorld=d.player.world;selectedPlotline=d.player.plotline;if(d.player.attrs)Object.assign(playerAttrs,d.player.attrs);$('attr_charm').textContent=playerAttrs.charm;$('attr_intel').textContent=playerAttrs.intel;$('attr_strength').textContent=playerAttrs.strength;$('attr_luck').textContent=playerAttrs.luck;}if(d.npcs){Object.assign(npcData,d.npcs);maleLeadKey=d.maleLeadKey||'';}if(d.gameState){gameDay=d.gameState.day||1;gameTimeIdx=d.gameState.timeIdx||0;dialogCount=d.gameState.dialogCount||0;}if(d.conversation)conversationHistory=d.conversation;}else if(Array.isArray(d)){conversationHistory=d;}storyArea.innerHTML='';conversationHistory.forEach(async(m)=>{if(m.role!=='system')await addStoryStream(m.content,m.role==='user'?'user':'assistant');});addStoryStream('剧情已导入','assistant');refreshLeadDarkIndicator();}catch(e){alert(isDoc?'Word 解析失败:'+e.message:'无效文件');}};if(isDoc)r.readAsText(f);else r.readAsText(f);fInp.value='';};
+hideAttr.onclick=()=>{attrP.classList.add('hide');attrTog.checked=false;};
+attrTog.onchange=()=>attrP.classList.toggle('hide',!attrTog.checked);
+pauseBtn.onclick=pauseAI;
+resumeBtn.onclick=resumeAI;
+
+// ===== PERFORMANCE GATE =====
+function setPerfMode(mode){
+    document.documentElement.dataset.perf=mode;
+    localStorage.setItem('perf_mode',mode);
+    var el=document.getElementById('perfGate');
+    el.classList.add('hide');
+    setTimeout(function(){el.style.display='none';},500);
+}
+(function(){
+    var saved=localStorage.getItem('perf_mode');
+    if(saved){
+        document.documentElement.dataset.perf=saved;
+        document.getElementById('perfGate').classList.add('hide');
+        document.getElementById('perfGate').style.display='none';
+    }
+})();
+
+// ===== BOOT =====
+localStorage.removeItem('game_api_key');
+initMine();initGame();
+</script>
 </body>
 </html>
